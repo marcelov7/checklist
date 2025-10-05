@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Checklist de Paradas - Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+            color: #ffffff;
+        }
+        .sidebar .active {
+            background-color: #007bff;
+        }
+        .progress-card {
+            border-left: 4px solid #007bff;
+        }
+        .area-card {
+            border-left: 4px solid #28a745;
+        }
+        .equipamento-row {
+            transition: background-color 0.3s;
+        }
+        .equipamento-row:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="p-3 text-white">
+                    <h5><i class="fas fa-clipboard-list"></i> Checklist</h5>
+                </div>
+                <nav>
+                    <a href="#" class="active">
+                        <i class="fas fa-stop-circle"></i> Paradas
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-map-marked-alt"></i> Áreas
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-cogs"></i> Equipamentos
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1><i class="fas fa-clipboard-check"></i> Parada de Manutenção Preventiva - Outubro 2025</h1>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Início: 01/10/2025 14:00
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-primary fs-6">Em Andamento</span>
+                        <button type="button" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> Finalizar Parada
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Descrição:</strong> Parada programada para manutenção preventiva de todos os equipamentos críticos
+                </div>
+
+                <!-- Progress Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card progress-card text-center">
+                            <div class="card-body">
+                                <h4 class="mb-0">70%</h4>
+                                <small class="text-muted">Progresso Geral</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Progresso por Área</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Área de Produção</span>
+                                            <span class="badge bg-primary">75%</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Área de Utilidades</span>
+                                            <span class="badge bg-primary">67%</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-primary" style="width: 67%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Área de Tratamento</span>
+                                            <span class="badge bg-success">100%</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Areas and Equipment Checklist -->
+                <div class="row">
+                    <!-- Área de Produção -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card area-card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Área de Produção</h5>
+                                    <span class="badge bg-primary">75%</span>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Bomba Centrífuga Principal</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> BOMB-001
+                                            </small>
+                                            <br><small class="text-muted">Bomba principal do processo</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Bomba Centrífuga Principal', 'BOMB-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 p-2 bg-light rounded">
+                                        <small><strong>Obs:</strong> Teste realizado conforme procedimento</small>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Motor Elétrico 1</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> MOT-001
+                                            </small>
+                                            <br><small class="text-muted">Motor de 50HP para bomba principal</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-danger status-badge">Problema</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Motor Elétrico 1', 'MOT-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 p-2 bg-light rounded">
+                                        <small class="text-danger"><strong>Problema:</strong> Vibração excessiva detectada no rolamento</small>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Válvula de Controle 1</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> VAL-001
+                                            </small>
+                                            <br><small class="text-muted">Válvula pneumática de controle de vazão</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Válvula de Controle 1', 'VAL-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Sensor de Pressão 1</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> PT-001
+                                            </small>
+                                            <br><small class="text-muted">Transmissor de pressão na linha principal</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-secondary status-badge">Pendente</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Sensor de Pressão 1', 'PT-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Área de Utilidades -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card area-card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Área de Utilidades</h5>
+                                    <span class="badge bg-primary">67%</span>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Compressor de Ar</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> COMP-001
+                                            </small>
+                                            <br><small class="text-muted">Compressor de ar comprimido</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Compressor de Ar', 'COMP-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Bomba de Água de Resfriamento</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> BOMB-002
+                                            </small>
+                                            <br><small class="text-muted">Sistema de água de resfriamento</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Bomba de Água de Resfriamento', 'BOMB-002')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Trocador de Calor</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> TC-001
+                                            </small>
+                                            <br><small class="text-muted">Trocador de calor principal</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-secondary status-badge">Pendente</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Trocador de Calor', 'TC-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de Tratamento -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card area-card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Área de Tratamento</h5>
+                                    <span class="badge bg-success">100%</span>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Bomba Dosadora de Químicos</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> BOMB-003
+                                            </small>
+                                            <br><small class="text-muted">Dosagem de produtos químicos</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Bomba Dosadora de Químicos', 'BOMB-003')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Filtro de Água</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> FIL-001
+                                            </small>
+                                            <br><small class="text-muted">Sistema de filtração</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Filtro de Água', 'FIL-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="equipamento-row p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">Medidor de pH</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag"></i> pH-001
+                                            </small>
+                                            <br><small class="text-muted">Controle de pH do processo</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success status-badge">OK</span>
+                                            <br>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" 
+                                                    onclick="abrirModalTeste('Medidor de pH', 'pH-001')">
+                                                <i class="fas fa-edit"></i> Testar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Teste -->
+    <div class="modal fade" id="testeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Teste do Equipamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="testeForm">
+                    <div class="modal-body">
+                        <div id="equipamentoInfo" class="mb-3 p-3 bg-light rounded">
+                            <!-- Informações do equipamento serão carregadas via JS -->
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status do Teste *</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="pendente">Pendente</option>
+                                <option value="ok">OK - Teste aprovado</option>
+                                <option value="problema">Problema encontrado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
+                                      placeholder="Observações gerais sobre o teste..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3" id="problemaDiv" style="display: none;">
+                            <label for="problema_descricao" class="form-label">Descrição do Problema *</label>
+                            <textarea class="form-control" id="problema_descricao" name="problema_descricao" rows="3" 
+                                      placeholder="Descreva detalhadamente o problema encontrado..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="testado_por" class="form-label">Testado por</label>
+                            <input type="text" class="form-control" id="testado_por" name="testado_por" 
+                                   placeholder="Nome do responsável pelo teste">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Teste
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function abrirModalTeste(equipamentoNome, equipamentoTag) {
+            document.getElementById('equipamentoInfo').innerHTML = `
+                <h6 class="mb-1">${equipamentoNome}</h6>
+                <small class="text-muted"><i class="fas fa-tag"></i> ${equipamentoTag}</small>
+            `;
+            
+            // Limpar formulário
+            document.getElementById('testeForm').reset();
+            document.getElementById('problemaDiv').style.display = 'none';
+            
+            // Mostrar modal
+            new bootstrap.Modal(document.getElementById('testeModal')).show();
+        }
+
+        // Mostrar/ocultar campo de problema
+        document.getElementById('status').addEventListener('change', function() {
+            const problemaDiv = document.getElementById('problemaDiv');
+            if (this.value === 'problema') {
+                problemaDiv.style.display = 'block';
+                document.getElementById('problema_descricao').required = true;
+            } else {
+                problemaDiv.style.display = 'none';
+                document.getElementById('problema_descricao').required = false;
+            }
+        });
+
+        // Submeter formulário de teste
+        document.getElementById('testeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulação de salvamento
+            alert('Teste salvo com sucesso! (Demonstração)');
+            bootstrap.Modal.getInstance(document.getElementById('testeModal')).hide();
+        });
+    </script>
+</body>
+</html>
