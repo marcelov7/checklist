@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Pendências - {{ $parada->nome }}</title>
+    <title>Relatório de Pendências - <?php echo e($parada->nome); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Estilos específicos para impressão */
@@ -216,32 +216,33 @@
         <h1>RELATÓRIO DE PENDÊNCIAS</h1>
         <div class="company-info">
             Sistema de Checklist de Paradas Industriais<br>
-            Data de Impressão: {{ now()->format('d/m/Y H:i') }}
+            Data de Impressão: <?php echo e(now()->format('d/m/Y H:i')); ?>
+
         </div>
     </div>
 
     <!-- Informações da Parada -->
     <div class="card no-break">
         <div class="card-header">
-            <strong>Parada: {{ $parada->nome }}</strong>
+            <strong>Parada: <?php echo e($parada->nome); ?></strong>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-6">
-                    <p><strong>Tipo:</strong> {{ ucfirst(str_replace('_', ' ', $parada->tipo)) }}</p>
-                    <p><strong>Status:</strong> {{ ucfirst(str_replace('_', ' ', $parada->status)) }}</p>
-                    <p><strong>Data Início:</strong> {{ $parada->data_inicio ? \Carbon\Carbon::parse($parada->data_inicio)->format('d/m/Y H:i') : 'Não informada' }}</p>
+                    <p><strong>Tipo:</strong> <?php echo e(ucfirst(str_replace('_', ' ', $parada->tipo))); ?></p>
+                    <p><strong>Status:</strong> <?php echo e(ucfirst(str_replace('_', ' ', $parada->status))); ?></p>
+                    <p><strong>Data Início:</strong> <?php echo e($parada->data_inicio ? \Carbon\Carbon::parse($parada->data_inicio)->format('d/m/Y H:i') : 'Não informada'); ?></p>
                 </div>
                 <div class="col-6">
-                    <p><strong>Duração:</strong> {{ $parada->duracao_prevista_horas ?? 'N/A' }} horas</p>
-                    <p><strong>Equipe:</strong> {{ $parada->equipe_responsavel ?? 'Não informada' }}</p>
-                    <p><strong>Descrição:</strong> {{ $parada->descricao ?? 'N/A' }}</p>
+                    <p><strong>Duração:</strong> <?php echo e($parada->duracao_prevista_horas ?? 'N/A'); ?> horas</p>
+                    <p><strong>Equipe:</strong> <?php echo e($parada->equipe_responsavel ?? 'Não informada'); ?></p>
+                    <p><strong>Descrição:</strong> <?php echo e($parada->descricao ?? 'N/A'); ?></p>
                 </div>
             </div>
         </div>
     </div>
 
-    @if($testesPendentes->isEmpty())
+    <?php if($testesPendentes->isEmpty()): ?>
         <!-- Quando não há pendências -->
         <div class="card">
             <div class="card-body text-center">
@@ -249,9 +250,9 @@
                 <p>Todos os equipamentos desta parada estão com status COMPLETO.</p>
             </div>
         </div>
-    @else
+    <?php else: ?>
         <!-- Resumo das Pendências -->
-        @php
+        <?php
             $totalEquipamentosPendentes = $testesPendentes->count();
             $equipamentosComProblema = $testesPendentes->filter(function($teste) {
                 return in_array('problema', [
@@ -263,28 +264,28 @@
                 ]);
             })->count();
             $equipamentosSemTeste = $totalEquipamentosPendentes - $equipamentosComProblema;
-        @endphp
+        ?>
 
         <div class="summary-stats no-break">
             <div class="stat-item">
-                <span class="stat-number text-danger">{{ $equipamentosComProblema }}</span>
+                <span class="stat-number text-danger"><?php echo e($equipamentosComProblema); ?></span>
                 <div class="stat-label">Com Problemas</div>
             </div>
             <div class="stat-item">
-                <span class="stat-number text-warning">{{ $equipamentosSemTeste }}</span>
+                <span class="stat-number text-warning"><?php echo e($equipamentosSemTeste); ?></span>
                 <div class="stat-label">Sem Teste/Pendente</div>
             </div>
             <div class="stat-item">
-                <span class="stat-number text-primary">{{ $totalEquipamentosPendentes }}</span>
+                <span class="stat-number text-primary"><?php echo e($totalEquipamentosPendentes); ?></span>
                 <div class="stat-label">Total de Pendências</div>
             </div>
         </div>
 
         <!-- Equipamentos com pendências agrupados por área -->
-        @foreach($testesPendentes->groupBy('equipamento.area.nome') as $nomeArea => $testesArea)
+        <?php $__currentLoopData = $testesPendentes->groupBy('equipamento.area.nome'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $nomeArea => $testesArea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <div class="card no-break">
                 <div class="card-header">
-                    <strong>{{ $nomeArea }} - {{ $testesArea->count() }} equipamento(s) pendente(s)</strong>
+                    <strong><?php echo e($nomeArea); ?> - <?php echo e($testesArea->count()); ?> equipamento(s) pendente(s)</strong>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm mb-0">
@@ -299,8 +300,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($testesArea as $teste)
-                                @php
+                            <?php $__currentLoopData = $testesArea; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $teste): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php
                                     // Usar a mesma lógica do relatório principal
                                     $checklistItems = ['ar_comprimido', 'protecoes_eletricas', 'protecoes_mecanicas', 'chave_remoto', 'inspecionado'];
                                     
@@ -342,15 +343,15 @@
                                     $statusClass = $statusGeral === 'COMPLETO' ? 'success' : 
                                                   ($statusGeral === 'PROBLEMA' ? 'danger' : 
                                                   ($statusGeral === 'EM ANDAMENTO' ? 'warning' : 'secondary'));
-                                @endphp
+                                ?>
                                 <tr>
-                                    <td><strong>{{ $teste->equipamento->nome ?? 'N/A' }}</strong></td>
-                                    <td><code>{{ $teste->equipamento->tag ?? 'N/A' }}</code></td>
-                                    <td><span class="badge bg-{{ $statusClass }}">{{ $statusGeral }}</span></td>
+                                    <td><strong><?php echo e($teste->equipamento->nome ?? 'N/A'); ?></strong></td>
+                                    <td><code><?php echo e($teste->equipamento->tag ?? 'N/A'); ?></code></td>
+                                    <td><span class="badge bg-<?php echo e($statusClass); ?>"><?php echo e($statusGeral); ?></span></td>
                                     <td>
                                         <div class="checklist-simple">
-                                            @foreach($checklistItems as $item)
-                                                @php
+                                            <?php $__currentLoopData = $checklistItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <?php
                                                     $nomeItem = match($item) {
                                                         'ar_comprimido' => 'Ar Comprimido',
                                                         'protecoes_eletricas' => 'Proteções Elétricas',
@@ -359,41 +360,42 @@
                                                         'inspecionado' => 'Inspeção Visual',
                                                         default => ucwords(str_replace('_', ' ', $item))
                                                     };
-                                                @endphp
-                                                <div>{{ $nomeItem }}</div>
-                                            @endforeach
+                                                ?>
+                                                <div><?php echo e($nomeItem); ?></div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="checklist-simple">
-                                            @foreach($checklistItems as $item)
-                                                @php $status = $teste->{$item . '_status'}; @endphp
+                                            <?php $__currentLoopData = $checklistItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <?php $status = $teste->{$item . '_status'}; ?>
                                                 <div>
-                                                    @if($status === 'ok')
+                                                    <?php if($status === 'ok'): ?>
                                                         <span class="text-success"><strong>✓ OK</strong></span>
-                                                    @elseif($status === 'problema')
+                                                    <?php elseif($status === 'problema'): ?>
                                                         <span class="text-danger"><strong>✗ PROBLEMA</strong></span>
-                                                    @elseif($status === 'nao_aplica')
+                                                    <?php elseif($status === 'nao_aplica'): ?>
                                                         <span class="text-info"><strong>— N/A</strong></span>
-                                                    @else
+                                                    <?php else: ?>
                                                         <span class="text-warning"><strong>⏳ PENDENTE</strong></span>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        {{ $teste->updated_at ? $teste->updated_at->format('d/m H:i') : '-' }}
+                                        <?php echo e($teste->updated_at ? $teste->updated_at->format('d/m H:i') : '-'); ?>
+
                                     </td>
                                 </tr>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <!-- Problemas Detalhados da Área -->
-            @php
+            <?php
                 $problemasArea = [];
                 foreach($testesArea as $teste) {
                     foreach($checklistItems as $item) {
@@ -417,29 +419,30 @@
                         }
                     }
                 }
-            @endphp
+            ?>
 
-            @if(count($problemasArea) > 0)
+            <?php if(count($problemasArea) > 0): ?>
                 <div class="card no-break">
                     <div class="card-header text-danger">
-                        <strong>⚠️ Problemas Detalhados - {{ $nomeArea }}</strong>
+                        <strong>⚠️ Problemas Detalhados - <?php echo e($nomeArea); ?></strong>
                     </div>
                     <div class="card-body">
-                        @foreach($problemasArea as $problema)
+                        <?php $__currentLoopData = $problemasArea; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $problema): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="border-bottom pb-2 mb-2">
-                                <strong>{{ $problema['equipamento'] }} ({{ $problema['tag'] }}) - {{ $problema['item'] }}</strong><br>
+                                <strong><?php echo e($problema['equipamento']); ?> (<?php echo e($problema['tag']); ?>) - <?php echo e($problema['item']); ?></strong><br>
                                 <small class="text-muted">
-                                    Testado por: {{ $problema['testado_por'] ?? 'N/A' }} em {{ $problema['data'] ? $problema['data']->format('d/m/Y H:i') : 'N/A' }}
+                                    Testado por: <?php echo e($problema['testado_por'] ?? 'N/A'); ?> em <?php echo e($problema['data'] ? $problema['data']->format('d/m/Y H:i') : 'N/A'); ?>
+
                                 </small><br>
-                                <span class="text-danger">{{ $problema['problema'] }}</span>
+                                <span class="text-danger"><?php echo e($problema['problema']); ?></span>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-            @endif
+            <?php endif; ?>
 
             <!-- Seção de Problemas Pendentes para Impressão -->
-            @php
+            <?php
                 $problemaspendentesEncontrados = false;
                 $problemasPorEquipamento = [];
                 
@@ -475,38 +478,38 @@
                         ];
                     }
                 }
-            @endphp
+            ?>
 
-            @if($problemaspendentesEncontrados)
+            <?php if($problemaspendentesEncontrados): ?>
                 <div class="card no-break">
                     <div class="card-header">
-                        <strong>⚠️ PROBLEMAS QUE PRECISAM DE RESOLUÇÃO - {{ $nomeArea }}</strong>
+                        <strong>⚠️ PROBLEMAS QUE PRECISAM DE RESOLUÇÃO - <?php echo e($nomeArea); ?></strong>
                     </div>
                     <div class="card-body">
-                        @foreach($problemasPorEquipamento as $nomeEquipamento => $dadosEquipamento)
+                        <?php $__currentLoopData = $problemasPorEquipamento; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $nomeEquipamento => $dadosEquipamento): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="mb-4 no-break">
                                 <h6 class="text-danger border-bottom pb-1 mb-3">
-                                    <strong>🔧 {{ $nomeEquipamento }} ({{ $dadosEquipamento['equipamento']->tag }})</strong>
+                                    <strong>🔧 <?php echo e($nomeEquipamento); ?> (<?php echo e($dadosEquipamento['equipamento']->tag); ?>)</strong>
                                 </h6>
                                 
-                                @foreach($dadosEquipamento['problemas'] as $item => $dados)
+                                <?php $__currentLoopData = $dadosEquipamento['problemas']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item => $dados): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="mb-4 border border-danger rounded p-3 no-break">
                                         <h6 class="text-danger mb-2">
-                                            <strong>⚠️ {{ $dados['nome'] }}</strong>
+                                            <strong>⚠️ <?php echo e($dados['nome']); ?></strong>
                                         </h6>
                                         
-                                        @if($dados['problema_descricao'])
+                                        <?php if($dados['problema_descricao']): ?>
                                             <div class="mb-3 p-2 bg-light border rounded">
                                                 <small><strong>Descrição do Problema:</strong></small><br>
-                                                <small>{{ $dados['problema_descricao'] }}</small>
+                                                <small><?php echo e($dados['problema_descricao']); ?></small>
                                             </div>
-                                        @endif
+                                        <?php endif; ?>
                                         
                                         <div class="text-center">
                                             <div class="border border-danger p-2 rounded bg-light">
-                                                <img src="{{ Storage::url($dados['foto_problema']) }}" 
+                                                <img src="<?php echo e(Storage::url($dados['foto_problema'])); ?>" 
                                                      style="max-width: 100%; max-height: 250px; object-fit: contain;"
-                                                     alt="Problema: {{ $dados['nome'] }}">
+                                                     alt="Problema: <?php echo e($dados['nome']); ?>">
                                             </div>
                                             <small class="text-muted d-block mt-2">Evidência do problema identificado</small>
                                         </div>
@@ -520,13 +523,13 @@
                                             <small class="text-muted">Data da Resolução: _____________ | Responsável: _____________</small>
                                         </div>
                                     </div>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-            @endif
-        @endforeach
+            <?php endif; ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
         <!-- Assinatura -->
         <div class="card no-break">
@@ -537,7 +540,8 @@
                         <div style="margin-top: 40px; border-top: 1px solid #000; padding-top: 5px;">
                             Nome: ______________________________<br>
                             Assinatura: _________________________<br>
-                            Data: {{ now()->format('d/m/Y') }}
+                            Data: <?php echo e(now()->format('d/m/Y')); ?>
+
                         </div>
                     </div>
                     <div class="col-6">
@@ -551,7 +555,7 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
 </body>
-</html>
+</html><?php /**PATH D:\XAMP\checklist\resources\views/paradas/pendencias-print.blade.php ENDPATH**/ ?>

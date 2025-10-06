@@ -213,55 +213,95 @@ Para dúvidas sobre implementação ou customizações:
 
 **Desenvolvido com ❤️ usando Laravel + Bootstrap**
 
-## About Laravel
+## 🔧 Funcionalidades Implementadas Recentemente
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### ✨ Sistema Completo de Relatórios
+- **Relatório Geral**: Visualização completa de todas as áreas e equipamentos com status dinâmico
+- **Relatório de Pendências**: Foco específico em equipamentos com problemas ou não testados
+- **Versões para Impressão**: Layouts otimizados para documentação física
+- **Cálculo Dinâmico**: Status calculado em tempo real baseado nos itens de checklist
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 📱 Interface Responsiva Completa
+- Design mobile-first otimizado para tablets industriais
+- Navegação intuitiva com breadcrumbs e botões de ação
+- Modais para visualização de imagens e detalhes
+- Cards organizados por área com indicadores visuais claros
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📊 Dashboard Funcional
+- Métricas em tempo real de progresso das paradas
+- Gráficos de equipamentos por status
+- Contadores dinâmicos de áreas e equipamentos
+- Navegação direta para relatórios específicos
 
-## Learning Laravel
+### 🖼️ Sistema de Imagens
+- Upload e armazenamento de fotos dos equipamentos
+- Galeria de imagens nos relatórios
+- Visualização em modal com zoom
+- Integração nas versões para impressão
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🖨️ Otimização para Impressão
+- Layouts especializados para documentação
+- Quebras de página inteligentes
+- Campos para assinatura e carimbo
+- Imagens incorporadas nos relatórios impressos
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🔄 Cálculo Dinâmico de Status
+- Status baseado em itens de checklist individuais
+- Tratamento especial para itens "N/A" (Não Aplicável)
+- Consistência entre todas as interfaces do sistema
+- Atualização automática sem necessidade de refresh
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 📂 Estrutura de Arquivos Principais
 
-## Laravel Sponsors
+### Views (Blade Templates)
+- `resources/views/paradas/show.blade.php` - Interface principal de testes
+- `resources/views/paradas/relatorio.blade.php` - Relatório geral completo
+- `resources/views/paradas/pendencias.blade.php` - Relatório de pendências
+- `resources/views/paradas/pendencias-print.blade.php` - Versão para impressão
+- `resources/views/dashboard.blade.php` - Dashboard principal
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Controllers
+- `app/Http/Controllers/ParadaController.php` - Gestão completa de paradas
+- `app/Http/Controllers/DashboardController.php` - Métricas e estatísticas
+- `app/Http/Controllers/TesteController.php` - Atualização de testes via AJAX
 
-### Premium Partners
+### Models
+- `app/Models/Parada.php` - Métodos para cálculo dinâmico de status
+- `app/Models/Teste.php` - Relacionamentos e validações
+- `app/Models/Equipamento.php` - Gestão de equipamentos e imagens
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🚀 Deployment
 
-## Contributing
+Este sistema está preparado para deployment em ambiente de produção:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Configuração otimizada para Laravel 11.x
+- Banco SQLite para facilidade de deployment
+- Assets compilados e otimizados
+- Configurações de cache prontas para produção
 
-## Code of Conduct
+### Comandos de Deployment
+```bash
+# Otimizar para produção
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Criar link simbólico para storage
+php artisan storage:link
+```
 
-## Security Vulnerabilities
+## 📞 Suporte Técnico
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Resolução de Problemas Comuns
+1. **Images não aparecem**: Verificar se `php artisan storage:link` foi executado
+2. **Status não atualiza**: Confirmar se campos do checklist estão preenchidos
+3. **Layout quebrado**: Verificar se Bootstrap 5 está carregado corretamente
 
-## License
+### Debugging
+- Logs disponíveis em `storage/logs/laravel.log`
+- Debug mode pode ser ativado via `.env` com `APP_DEBUG=true`
+- Banco SQLite em `database/database.sqlite`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📄 License
+
+Este projeto utiliza o framework Laravel sob licença MIT.

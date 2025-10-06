@@ -440,40 +440,57 @@
                 </div>
 
                 <div class="login-form">
-                    @if(session('success'))
+                    <?php if(session('success')): ?>
                         <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                        </div>
-                    @endif
+                            <i class="fas fa-check-circle me-2"></i><?php echo e(session('success')); ?>
 
-                    @if(session('error'))
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if(session('error')): ?>
                         <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                        </div>
-                    @endif
+                            <i class="fas fa-exclamation-circle me-2"></i><?php echo e(session('error')); ?>
 
-                    @if($errors->has('login'))
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if($errors->has('login')): ?>
                         <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>{{ $errors->first('login') }}
-                        </div>
-                    @endif
+                            <i class="fas fa-exclamation-circle me-2"></i><?php echo e($errors->first('login')); ?>
 
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="<?php echo e(route('login')); ?>">
+                        <?php echo csrf_field(); ?>
                         
                         <div class="form-group">
                             <label class="form-label">
                                 <i class="fas fa-user-circle me-2"></i>Email, Username ou Nome
                             </label>
                             <input type="text" 
-                                   class="form-control @error('username') is-invalid @enderror" 
+                                   class="form-control <?php $__errorArgs = ['username'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                    name="username" 
                                    placeholder="Digite seu email, username ou nome"
-                                   value="{{ old('username') }}"
+                                   value="<?php echo e(old('username')); ?>"
                                    required>
-                            @error('username')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <?php $__errorArgs = ['username'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
 
                         <div class="form-group">
@@ -481,13 +498,27 @@
                                 <i class="fas fa-lock me-2"></i>Senha
                             </label>
                             <input type="password" 
-                                   class="form-control @error('password') is-invalid @enderror" 
+                                   class="form-control <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                                    name="password" 
                                    placeholder="Digite sua senha"
                                    required>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         </div>
 
                         <button type="submit" class="btn-login">
@@ -619,4 +650,4 @@
         });
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\XAMP\checklist\resources\views/auth/login.blade.php ENDPATH**/ ?>
