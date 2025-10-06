@@ -20,13 +20,13 @@ cd $PROJECT_DIR
 if [ ! -d ".git" ]; then
     echo "🔄 Clonando repositório pela primeira vez..."
     # Se não existe, fazer clone inicial
-    git clone https://github.com/marcelov7/checklist.git .
+    /usr/bin/git clone https://github.com/marcelov7/checklist.git .
 else
     echo "🔄 Atualizando repositório existente..."
     # Se existe, fazer pull das últimas alterações
-    git fetch origin
-    git reset --hard origin/main
-    git pull origin main
+    /usr/bin/git fetch origin
+    /usr/bin/git reset --hard origin/main
+    /usr/bin/git pull origin main
 fi
 
 # 3. Verificar se o composer está disponível
@@ -78,8 +78,8 @@ fi
 
 # 5. Gerar chave da aplicação se não existir
 echo "🔑 Configurando chave da aplicação..."
-if ! grep -q "APP_KEY=base64:" .env; then
-    php artisan key:generate --force
+if ! /bin/grep -q "APP_KEY=base64:" .env; then
+    /usr/bin/php artisan key:generate --force
     echo "✅ Nova chave APP_KEY gerada"
 else
     echo "✅ Chave APP_KEY já existe"
@@ -87,42 +87,42 @@ fi
 
 # 6. Configurar permissões básicas
 echo "🔒 Configurando permissões..."
-chmod -R 755 $PROJECT_DIR
-chmod -R 775 $PROJECT_DIR/storage
-chmod -R 775 $PROJECT_DIR/bootstrap/cache
+/bin/chmod -R 755 $PROJECT_DIR
+/bin/chmod -R 775 $PROJECT_DIR/storage
+/bin/chmod -R 775 $PROJECT_DIR/bootstrap/cache
 
 # 7. Criar diretórios necessários se não existirem
 echo "📁 Criando diretórios necessários..."
-mkdir -p storage/logs
-mkdir -p storage/framework/sessions
-mkdir -p storage/framework/views
-mkdir -p storage/framework/cache
-mkdir -p bootstrap/cache
+/bin/mkdir -p storage/logs
+/bin/mkdir -p storage/framework/sessions
+/bin/mkdir -p storage/framework/views
+/bin/mkdir -p storage/framework/cache
+/bin/mkdir -p bootstrap/cache
 
 # 8. Executar migrações
 echo "🗄️  Executando migrações do banco de dados..."
-php artisan migrate --force
+/usr/bin/php artisan migrate --force
 
 # 9. Executar seeders para dados iniciais
 echo "🌱 Verificando seeders..."
-php artisan db:seed --force --class=DadosExemploSeeder
+/usr/bin/php artisan db:seed --force --class=DadosExemploSeeder
 
 # 10. Criar link simbólico do storage
 echo "🔗 Criando link simbólico do storage..."
-php artisan storage:link
+/usr/bin/php artisan storage:link
 
 # 11. Otimizar aplicação para produção
 echo "⚡ Otimizando aplicação..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+/usr/bin/php artisan config:cache
+/usr/bin/php artisan route:cache
+/usr/bin/php artisan view:cache
 
 # 12. Configurar permissões finais
 echo "🔒 Configurando permissões finais..."
-chown -R devaxis-checklist:devaxis-checklist $PROJECT_DIR/storage
-chown -R devaxis-checklist:devaxis-checklist $PROJECT_DIR/bootstrap/cache
-chmod -R 775 $PROJECT_DIR/storage
-chmod -R 775 $PROJECT_DIR/bootstrap/cache
+/bin/chown -R devaxis-checklist:devaxis-checklist $PROJECT_DIR/storage
+/bin/chown -R devaxis-checklist:devaxis-checklist $PROJECT_DIR/bootstrap/cache
+/bin/chmod -R 775 $PROJECT_DIR/storage
+/bin/chmod -R 775 $PROJECT_DIR/bootstrap/cache
 
 # 13. Verificar se a estrutura está correta
 echo "🔍 Verificando estrutura final..."
@@ -148,8 +148,8 @@ echo "=============================================="
 # 14. Mostrar informações do sistema
 echo ""
 echo "📊 INFORMAÇÕES DO SISTEMA:"
-echo "PHP Version: $(php -v | head -n 1)"
-echo "Laravel Version: $(php artisan --version 2>/dev/null || echo 'Não detectado')"
+echo "PHP Version: $(/usr/bin/php -v | /usr/bin/head -n 1)"
+echo "Laravel Version: $(/usr/bin/php artisan --version 2>/dev/null || echo 'Não detectado')"
 echo "Espaço em disco:"
-df -h $PROJECT_DIR
+/bin/df -h $PROJECT_DIR
 echo "=============================================="
