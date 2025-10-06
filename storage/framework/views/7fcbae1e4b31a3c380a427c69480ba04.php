@@ -2208,4 +2208,4 @@
     </script>
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
-</html><?php /**PATH D:\XAMP\checklist\resources\views/layouts/app.blade.php ENDPATH**/ ?>
+</html><?php /**PATH D:\XAMP\checklist\resources\views\layouts\app.blade.php ENDPATH**/ ?>

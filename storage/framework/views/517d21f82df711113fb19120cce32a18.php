@@ -576,4 +576,4 @@
     </div>
 
 </body>
-</html><?php /**PATH D:\XAMP\checklist\resources\views/paradas/print.blade.php ENDPATH**/ ?>
+</html><?php /**PATH D:\XAMP\checklist\resources\views\paradas\print.blade.php ENDPATH**/ ?>

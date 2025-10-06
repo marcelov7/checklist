@@ -558,4 +558,4 @@
     <?php endif; ?>
 
 </body>
-</html><?php /**PATH D:\XAMP\checklist\resources\views/paradas/pendencias-print.blade.php ENDPATH**/ ?>
+</html><?php /**PATH D:\XAMP\checklist\resources\views\paradas\pendencias-print.blade.php ENDPATH**/ ?>
