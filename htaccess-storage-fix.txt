@@ -1,0 +1,10 @@
+# Fix para Imagens 404 - Storage Link
+# Adicione estas regras ao .htaccess em public/ se o symlink não funcionar
+
+# Redirecionar /storage/ para /storage/app/public/
+RewriteEngine On
+
+# Reescrever requisições para storage
+RewriteCond %{REQUEST_URI} ^/storage/(.*)$
+RewriteCond %{DOCUMENT_ROOT}/../storage/app/public/%1 -f
+RewriteRule ^storage/(.*)$ ../storage/app/public/$1 [L]
