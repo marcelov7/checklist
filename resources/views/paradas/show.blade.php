@@ -1124,9 +1124,9 @@
 .btn-outline-light { box-shadow: none; }
 
 /* Ajustes para telas grandes (desktop XL) */
-@media (min-width: 1200px) {
+    @media (min-width: 1200px) {
     /* Limita a largura da barra de progresso para evitar visual estranho em telas muito largas */
-    .equipment-progress { max-width: 160px; }
+    .equipment-progress { max-width: 240px; }
     .equipment-header { align-items: center; }
 }
 
@@ -1331,7 +1331,7 @@
                             @foreach($area->equipamentos as $equipamento)
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-8 col-xl-6">
                                     <div class="equipment-card h-100">
                                         <!-- Header do Equipamento (sempre visível) -->
                                         <div class="equipment-header" 
