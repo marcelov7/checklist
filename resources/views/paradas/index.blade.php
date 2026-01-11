@@ -27,8 +27,8 @@
 
 <div class="row">
     @forelse($paradas as $parada)
-        <div class="col-12 col-sm-6 col-lg-4 mb-4">
-            <div class="card h-100">
+            <div class="col-12 col-sm-6 col-lg-4 mb-4">
+            <div class="card h-100" data-parada-id="{{ $parada->id }}">
                 <div class="card-header">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2">
                         <span class="badge badge-departamento fs-6 mb-1 mb-sm-0">{{ $parada->macro }}</span>
@@ -170,4 +170,54 @@
         </div>
     </div>
 @endif
+<script>
+    (function(){
+        // Atualiza progresso das paradas ativas periodicamente
+        const intervalo = 8000; // ms
+
+        function updateCard(paradaId, data) {
+            try {
+                const card = document.querySelector('[data-parada-id="' + paradaId + '"]');
+                if (!card) return;
+                const progressBar = card.querySelector('.progress-bar');
+                if (progressBar && data.percentual !== undefined) {
+                    const percentual = parseInt(data.percentual, 10);
+                    progressBar.style.width = percentual + '%';
+                    progressBar.setAttribute('aria-valuenow', percentual);
+                    progressBar.textContent = percentual + '%';
+                    // ajustar classes
+                    if (percentual >= 100) {
+                        progressBar.classList.remove('bg-primary');
+                        progressBar.classList.add('bg-success');
+                    } else {
+                        progressBar.classList.remove('bg-success');
+                        progressBar.classList.add('bg-primary');
+                    }
+                }
+            } catch(e) { console.error('Erro updateCard', e); }
+        }
+
+        function fetchAndUpdate(paradaId) {
+            fetch('/paradas/' + paradaId + '/progresso')
+                .then(r => r.json())
+                .then(json => {
+                    if (json && json.success) updateCard(paradaId, json);
+                })
+                .catch(err => console.error('Erro fetch progresso', err));
+        }
+
+        function initPolling() {
+            const cards = Array.from(document.querySelectorAll('[data-parada-id]'));
+            if (!cards.length) return;
+            // inicial fetch
+            cards.forEach(c => fetchAndUpdate(c.dataset.paradaId));
+            // intervalo
+            setInterval(() => {
+                cards.forEach(c => fetchAndUpdate(c.dataset.paradaId));
+            }, intervalo);
+        }
+
+        document.addEventListener('DOMContentLoaded', initPolling);
+    })();
+</script>
 @endsection
