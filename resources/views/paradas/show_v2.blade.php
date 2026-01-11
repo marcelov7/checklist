@@ -84,6 +84,44 @@
         .action-buttons .btn-success { background: #28a745 !important; border-color: #28a745 !important; color: #fff !important; }
     }
 
+    /* Mobile overrides to remove hover/transition animations that interfere with touch
+       and to fix layout/overlap issues on small screens */
+    @media (max-width: 991.98px) {
+        /* Disable transitions and transforms on interactive elements (touch devices) */
+        .checklist-line,
+        .checklist-line:hover,
+        .action-buttons .btn,
+        .action-buttons .btn:hover,
+        .mobile-user-card,
+        .mobile-parada-card,
+        .mobile-card-list .mobile-parada-card {
+            transition: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Improve tap responsiveness */
+        .action-buttons .btn,
+        .card .btn,
+        .summary-card .btn {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Equipment header: avoid overlapping progress / badges */
+        .equipment-shell .equipment-header { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; }
+        .equipment-shell .equipment-header .equipment-title { min-height: 3.2rem; }
+        .equipment-shell .equipment-header .progress { min-width: 0 !important; width: 100% !important; }
+        .equipment-shell .equipment-header .badge { position: relative; margin-left: 0; margin-top: 0.25rem; }
+
+        /* Ensure long titles wrap and don't overlap */
+        .equipment-shell .equipment-title h6 { white-space: normal; word-break: break-word; overflow-wrap: break-word; }
+
+        /* Small fixes for status badges and action buttons in the checklist lines */
+        .checklist-actions .status-badge { justify-content: flex-start; gap: 0.5rem; }
+        .action-buttons { gap: 0.4rem; }
+    }
+
 </style>
 @endsection
 

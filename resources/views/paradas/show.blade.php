@@ -471,6 +471,33 @@
     .checklist-item {
         padding: 0.75rem;
     }
+
+        /* Disable hover/transform animations on touch devices to avoid screen shift
+           and make buttons more responsive */
+        .btn,
+        .card,
+        .equipment-card,
+        .checklist-item,
+        .equipment-header,
+        .equipment-card:hover,
+        .checklist-item:hover {
+            transition: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .action-buttons .btn,
+        .checklist-actions .btn {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Prevent overlap in equipment header: make title wrap and progress full-width */
+        .equipment-header { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; }
+        .equipment-header .d-flex { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+        .equipment-header .progress { width: 100% !important; min-width: 0 !important; }
+        .equipment-header .progress-bar { width: 100% !important; }
+        .equipment-header h6 { white-space: normal; word-break: break-word; overflow-wrap: break-word; }
 }
 
 @media (min-width: 768px) {
