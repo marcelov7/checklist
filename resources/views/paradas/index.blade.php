@@ -85,16 +85,17 @@
 
                     @php
                         $percentual = $parada->getPercentualCompleto();
+                        $percentualDisplay = number_format($percentual, 1, '.', '');
                     @endphp
                     
                     <div class="progress mb-2" style="height: 20px;">
-                        <div class="progress-bar progress-bar-striped {{ $percentual == 100 ? 'bg-success' : 'bg-primary' }}" 
+                        <div class="progress-bar progress-bar-striped {{ $percentual >= 100 ? 'bg-success' : 'bg-primary' }}" 
                              role="progressbar" 
-                             style="width: {{ $percentual }}%"
-                             aria-valuenow="{{ $percentual }}" 
+                             style="width: {{ $percentualDisplay }}%"
+                             aria-valuenow="{{ $percentualDisplay }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            {{ $percentual }}%
+                            {{ $percentualDisplay }}%
                         </div>
                     </div>
                     
@@ -181,7 +182,8 @@
                 if (!card) return;
                 const progressBar = card.querySelector('.progress-bar');
                 if (progressBar && data.percentual !== undefined) {
-                    const percentual = parseInt(data.percentual, 10);
+                    const percentualRaw = parseFloat(data.percentual);
+                    const percentual = Number.isFinite(percentualRaw) ? Math.round(percentualRaw * 10) / 10 : 0;
                     progressBar.style.width = percentual + '%';
                     progressBar.setAttribute('aria-valuenow', percentual);
                     progressBar.textContent = percentual + '%';
@@ -198,7 +200,9 @@
         }
 
         function fetchAndUpdate(paradaId) {
-            fetch('/paradas/' + paradaId + '/progresso')
+            // cache-busting: add timestamp and request no-store to avoid stale cached responses
+            const url = '/paradas/' + paradaId + '/progresso?_=' + Date.now();
+            fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
                 .then(r => r.json())
                 .then(json => {
                     if (json && json.success) updateCard(paradaId, json);

@@ -2041,7 +2041,9 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             }
 
             function fetchProgresso() {
-                fetch('/paradas/' + paradaId + '/progresso')
+                // cache-busting: append timestamp and request no-store to avoid stale cached responses
+                const url = '/paradas/' + paradaId + '/progresso?_=' + Date.now();
+                fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
                     .then(r => r.json())
                     .then(json => { if (json && json.success) atualizarPainelLateral(json); })
                     .catch(err => console.error('Erro fetch progresso (painel lateral)', err));
