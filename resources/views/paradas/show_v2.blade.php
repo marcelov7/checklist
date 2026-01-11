@@ -132,6 +132,21 @@
         .equipment-shell { min-width: 560px; }
     }
 
+    /* Em telas grandes, mover apenas os botões de ação para uma linha abaixo do texto do item */
+    @media (min-width: 1200px) {
+        .checklist-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-areas: "info" "actions";
+            gap: 0.5rem;
+            align-items: start;
+        }
+        .checklist-info { grid-area: info; }
+        .checklist-actions { grid-area: actions; display: flex; flex-direction: row; justify-content: flex-start; gap: 0.5rem; }
+        .action-buttons { width: 100%; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .action-buttons .btn { min-width: 140px; }
+    }
+
 </style>
 @endsection
 
