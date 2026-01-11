@@ -221,7 +221,10 @@ class ParadaController extends Controller
             'total_testes' => $totalTestes,
             'testes_ok' => $testesOk,
             'testes_pendentes' => $testesPendentes,
-        ]);
+        ])
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
     }
 
     /**
