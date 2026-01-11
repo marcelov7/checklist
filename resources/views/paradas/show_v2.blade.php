@@ -122,6 +122,12 @@
         .action-buttons { gap: 0.4rem; }
     }
 
+    /* Ajustes para telas grandes (desktop XL) */
+    @media (min-width: 1200px) {
+        .equipment-progress { max-width: 160px; }
+        .equipment-shell .equipment-header { align-items: center; }
+    }
+
 </style>
 @endsection
 
@@ -312,7 +318,7 @@
                             @foreach($area->equipamentos as $equipamento)
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4">
                                     <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}">
                                         <!-- Header do Equipamento -->
                                         <div class="equipment-header">
