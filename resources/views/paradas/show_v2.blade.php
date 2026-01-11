@@ -122,18 +122,63 @@
         .action-buttons { gap: 0.4rem; }
     }
 
-    /* Ajustes para telas grandes (desktop XL) */
+    /* Transformar cards em lista horizontal para telas grandes */
     @media (min-width: 1200px) {
-        .equipment-progress { max-width: 240px; }
-        .equipment-shell .equipment-header { align-items: center; }
-        /* Aumentar espaço dos itens do checklist e botões em telas maiores */
-        .checklist-content { grid-template-columns: minmax(0, 1fr) minmax(420px, 560px); gap: 1rem; }
-        .action-buttons .btn { min-width: 140px; }
-        .equipment-shell { min-width: 560px; }
-    }
-
-    /* Em telas grandes, mover apenas os botões de ação para uma linha abaixo do texto do item */
-    @media (min-width: 1200px) {
+        /* Cards de equipamento transformados em lista */
+        .equipment-shell { 
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border-radius: 8px;
+            border: 1px solid #e3e8ef;
+            transition: all 0.2s ease;
+        }
+        
+        .equipment-shell:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #17a2b8;
+        }
+        
+        .equipment-shell .equipment-header { 
+            padding: 0.85rem 1.25rem;
+            background: linear-gradient(90deg, #f8fafc 0%, #fff 100%);
+            align-items: center;
+        }
+        
+        .equipment-shell .equipment-title h6 { 
+            font-size: 1rem;
+            margin-bottom: 0.15rem;
+        }
+        
+        .equipment-shell .equipment-title small {
+            font-size: 0.85rem;
+        }
+        
+        .equipment-progress { max-width: 120px; }
+        
+        .equipment-body { 
+            padding: 0.5rem 1.25rem 0.85rem;
+        }
+        
+        /* Itens do checklist como linhas de lista */
+        .checklist-line {
+            padding: 0.75rem 0;
+            margin-bottom: 0;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid #f0f3f7;
+            background: transparent;
+        }
+        
+        .checklist-line:last-child {
+            border-bottom: none;
+        }
+        
+        .checklist-line:hover {
+            background: #f8fafc;
+            transform: none;
+            box-shadow: none;
+        }
+        
         .checklist-content {
             display: grid;
             grid-template-columns: 1fr;
@@ -141,10 +186,49 @@
             gap: 0.5rem;
             align-items: start;
         }
-        .checklist-info { grid-area: info; }
-        .checklist-actions { grid-area: actions; display: flex; flex-direction: row; justify-content: flex-start; gap: 0.5rem; }
-        .action-buttons { width: 100%; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .action-buttons .btn { min-width: 140px; }
+        
+        .checklist-info { 
+            grid-area: info;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .checklist-info i {
+            font-size: 1rem;
+            margin-right: 0.65rem;
+        }
+        
+        .checklist-actions { 
+            grid-area: actions;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge .badge {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.65rem;
+        }
+        
+        .action-buttons { 
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons .btn { 
+            min-width: 110px;
+            padding: 0.4rem 0.85rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
     }
 
 </style>
@@ -337,7 +421,7 @@
                             @foreach($area->equipamentos as $equipamento)
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-8 col-xl-6">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-12">
                                     <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}">
                                         <!-- Header do Equipamento -->
                                         <div class="equipment-header">

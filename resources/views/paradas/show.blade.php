@@ -1123,41 +1123,112 @@
 /* Botões mais discretos e com sombra sutil */
 .btn-outline-light { box-shadow: none; }
 
-/* Ajustes para telas grandes (desktop XL) */
-    @media (min-width: 1200px) {
-    /* Limita a largura da barra de progresso para evitar visual estranho em telas muito largas */
-    .equipment-progress { max-width: 240px; }
-    .equipment-header { align-items: center; }
+/* Transformar cards em lista horizontal para telas grandes */
+@media (min-width: 1200px) {
+    /* Cards de equipamento transformados em lista */
+    .equipment-card { 
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border-radius: 8px;
+        border: 1px solid #e3e8ef;
+        transition: all 0.2s ease;
+    }
+    
+    .equipment-card:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-color: #17a2b8;
+    }
+    
+    .equipment-header { 
+        padding: 0.85rem 1.25rem;
+        background: linear-gradient(90deg, #f8fafc 0%, #fff 100%);
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .equipment-header h6 { 
+        font-size: 1rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .equipment-header small {
+        font-size: 0.85rem;
+    }
+    
+    .equipment-progress { max-width: 120px; }
+    
+    .equipment-body { 
+        padding: 0.5rem 1.25rem 0.85rem;
+    }
+    
+    /* Itens do checklist como linhas de lista */
+    .checklist-item {
+        padding: 0.75rem 0;
+        margin-bottom: 0;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid #f0f3f7;
+        background: transparent;
+    }
+    
+    .checklist-item:last-child {
+        border-bottom: none;
+    }
+    
+    .checklist-item:hover {
+        background: #f8fafc;
+    }
+    
+    .checklist-content {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-areas: "info" "actions";
+        gap: 0.5rem;
+        align-items: start;
+    }
+    
+    .checklist-info { 
+        grid-area: info;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    
+    .checklist-info i {
+        font-size: 1rem;
+        margin-right: 0.65rem;
+    }
+    
+    .checklist-actions { 
+        grid-area: actions;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-badge .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.65rem;
+    }
+    
+    .action-buttons { 
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .action-buttons .btn { 
+        min-width: 110px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
 }
-
-    /* Em telas grandes, garantir espaço para textos e botões dos itens */
-    @media (min-width: 1200px) {
-        .equipment-card { min-width: 560px; }
-        .checklist-content {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
-            gap: 1rem;
-            align-items: center;
-        }
-        .action-buttons .btn { min-width: 140px; }
-        .equipment-header .d-flex { flex-wrap: nowrap; gap: 1rem; }
-        .equipment-header .equipment-title { min-width: 260px; }
-    }
-
-    /* Em telas grandes, mover apenas os botões de ação para uma linha abaixo do texto do item */
-    @media (min-width: 1200px) {
-        .checklist-content {
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-template-areas: "info" "actions";
-            gap: 0.5rem;
-            align-items: start;
-        }
-        .checklist-info { grid-area: info; }
-        .checklist-actions { grid-area: actions; display: flex; flex-direction: row; justify-content: flex-start; gap: 0.5rem; }
-        .action-buttons { width: 100%; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .action-buttons .btn { min-width: 140px; }
-    }
 
 </style>
 @endsection
@@ -1360,7 +1431,7 @@
                             @foreach($area->equipamentos as $equipamento)
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-8 col-xl-6">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-12">
                                     <div class="equipment-card h-100">
                                         <!-- Header do Equipamento (sempre visível) -->
                                         <div class="equipment-header" 
