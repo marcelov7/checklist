@@ -2013,5 +2013,42 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
 
     })();
 </script>
+    <script>
+        (function(){
+            // Polling para manter o painel lateral sincronizado com o cálculo do servidor
+            const paradaId = '{{ $parada->id }}';
+            const intervalo = 8000;
+
+            function atualizarPainelLateral(data) {
+                try {
+                    if (!data) return;
+                    const percentual = parseFloat(data.percentual || 0);
+                    const barra = document.querySelector('.summary-section.summary-progress .progress-bar');
+                    if (barra) {
+                        barra.style.width = percentual + '%';
+                        barra.classList.toggle('bg-success', percentual >= 100);
+                        barra.classList.toggle('bg-primary', percentual < 100);
+                    }
+                    const elPercent = document.getElementById('parada_percentual_geral');
+                    if (elPercent) elPercent.textContent = Math.round(percentual*10)/10 + '%';
+                    const info = document.getElementById('parada_progress_info');
+                    if (info) {
+                        const ok = data.testes_ok ?? data.testes_ok ?? 0;
+                        const pend = data.testes_pendentes ?? 0;
+                        info.textContent = ok + ' resolvido(s) • ' + pend + ' pendente(s)';
+                    }
+                } catch(e) { console.error('Erro atualizarPainelLateral', e); }
+            }
+
+            function fetchProgresso() {
+                fetch('/paradas/' + paradaId + '/progresso')
+                    .then(r => r.json())
+                    .then(json => { if (json && json.success) atualizarPainelLateral(json); })
+                    .catch(err => console.error('Erro fetch progresso (painel lateral)', err));
+            }
+
+            document.addEventListener('DOMContentLoaded', function(){ fetchProgresso(); setInterval(fetchProgresso, intervalo); });
+        })();
+    </script>
     </div>
 @endsection
