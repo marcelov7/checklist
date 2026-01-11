@@ -250,6 +250,34 @@
             background-color: #f8f9fa;
             border: 1px solid #ced4da;
         }
+
+        /* Mobile: disable animations/transforms and improve touch behavior to avoid
+           screen movement when tapping elements */
+        @media (max-width: 991.98px) {
+            *, *::before, *::after {
+                transition: none !important;
+                animation: none !important;
+                transform: none !important;
+            }
+
+            html, body {
+                -webkit-tap-highlight-color: transparent;
+                overscroll-behavior-y: contain;
+                touch-action: manipulation;
+            }
+
+            a, button, input, label, .btn, .card, .equipment-shell, .equipment-card, .checklist-item {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+                will-change: auto !important;
+            }
+
+            /* Remove scale/translate on :active to avoid visual jump */
+            a:active, button:active, .btn:active, .card:active {
+                transform: none !important;
+                outline: none !important;
+            }
+        }
         
         /* Navbar superior */
         .mobile-navbar {

@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.9.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
@@ -30,12 +32,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "laravel-vite-plugin": "^0.8.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "npm:rolldown-vite@7.1.14"
-  },
-  "overrides": {
-    "vite": "npm:rolldown-vite@7.1.14"
+    "vite": "^5.1.0"
   },
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "main": "eslint.config.js",
