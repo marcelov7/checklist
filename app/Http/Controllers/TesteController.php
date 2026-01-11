@@ -176,7 +176,7 @@ class TesteController extends Controller
             $validated = $request->validate([
                 'item' => 'required|in:ar_comprimido,protecoes_eletricas,protecoes_mecanicas,chave_remoto,inspecionado',
                 'problema' => 'required|string|min:3',
-                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Máximo 2MB para a foto
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240' // Máximo 10MB para a foto
             ]);
 
             \Illuminate\Support\Facades\Log::info('Dados validados:', $validated);
@@ -344,7 +344,7 @@ class TesteController extends Controller
             $validated = $request->validate([
                 'item' => 'required|in:ar_comprimido,protecoes_eletricas,protecoes_mecanicas,chave_remoto,inspecionado',
                 'resolucao' => 'required|string|min:1',
-                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240'
             ]);
 
             \Illuminate\Support\Facades\Log::info('Validação passou:', $validated);
@@ -354,7 +354,7 @@ class TesteController extends Controller
             $errors = $e->validator->errors()->all();
             $userMessages = array_map(function ($m) {
                 if (strpos($m, 'validation.uploaded') !== false || strpos($m, 'uploaded') !== false) {
-                    return 'Falha no upload do arquivo. Verifique o tamanho (máx 2MB) e o tipo da imagem.';
+                    return 'Falha no upload do arquivo. Verifique o tamanho (máx 10MB) e o tipo da imagem.';
                 }
                 return $m;
             }, $errors);

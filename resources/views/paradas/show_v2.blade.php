@@ -370,6 +370,28 @@
             <!-- Toast será injetado via JS -->
         </div>
 
+        <!-- Filtros e listagem filtrada -->
+        <div class="mb-3">
+            <div class="d-flex flex-column flex-md-row gap-2 align-items-center">
+                <div class="d-flex gap-2 align-items-center">
+                    <label class="me-2 mb-0 fw-bold">Filtrar:</label>
+                    <select id="filter-area" class="form-select form-select-sm" style="min-width:180px">
+                        <option value="">Todas as áreas</option>
+                    </select>
+                    <select id="filter-equip" class="form-select form-select-sm" style="min-width:200px">
+                        <option value="">Todos os equipamentos</option>
+                    </select>
+                    <button id="apply-filters" class="btn btn-primary btn-sm">Aplicar</button>
+                    <button id="clear-filters" class="btn btn-outline-secondary btn-sm">Limpar</button>
+                </div>
+                <div class="ms-auto">
+                    <span id="filter-active-badge" class="badge bg-info" style="display:none">Filtro ativo</span>
+                </div>
+            </div>
+            <div id="filtered-equipment-container" class="row mt-3"></div>
+            <nav id="filter-pagination" class="mt-3" aria-label="Paginação de equipamentos"></nav>
+        </div>
+
         <!-- Lista de Áreas e Equipamentos -->
         @foreach($areas as $area)
         <!-- Card da Área contendo todos os equipamentos -->
@@ -422,7 +444,7 @@
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
                                 <div class="col-12 col-sm-6 col-md-6 col-lg-12">
-                                    <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}">
+                                    <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}" data-area-id="{{ $area->id }}" data-equip-id="{{ $equipamento->id }}" data-equip-name="{{ $equipamento->nome }}">
                                         <!-- Header do Equipamento -->
                                         <div class="equipment-header">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -1534,20 +1556,20 @@ function salvarResolucao(item, testeId) {
     if (!verificarOperacaoPermitida('salvar resolução')) return;
     
     const form = document.getElementById(`form_resolucao_${item}_${testeId}`);
-    // Validação no cliente: tamanho máximo 2MB e tipos permitidos (mensagem inline)
+    // Validação no cliente: tamanho máximo 10MB e tipos permitidos (mensagem inline)
     const fileInput = form.querySelector('input[type="file"]');
     const errorEl = form.querySelector('.resolucao-error');
     if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
     if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 10 * 1024 * 1024; // 10MB
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
         if (file.size > maxSize) {
             if (errorEl) {
-                errorEl.textContent = 'O arquivo é muito grande. Tamanho máximo permitido: 2MB.';
+                errorEl.textContent = 'O arquivo é muito grande. Tamanho máximo permitido: 10MB.';
                 errorEl.style.display = 'block';
             } else {
-                alert('O arquivo é muito grande. Tamanho máximo permitido: 2MB.');
+                alert('O arquivo é muito grande. Tamanho máximo permitido: 10MB.');
             }
             return;
         }
@@ -1713,6 +1735,187 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
         // Lógica similar para foto de resolução...
     }
 }
+
+    /* ===== FILTRO POR ÁREA / EQUIPAMENTO + PAGINAÇÃO (CLIENT-SIDE) ===== */
+    (function () {
+        const PAGE_SIZE = 10;
+        const prefix = 'parada_filter_{{ $parada->id }}_';
+        let equipments = []; // { wrapperEl, cardEl, areaId, equipId, equipName, originalParent, originalNext }
+        let currentPage = 1;
+
+        function collectEquipments() {
+            equipments = [];
+            document.querySelectorAll('.equipment-card').forEach(card => {
+                const wrapper = card.parentElement; // .col-*
+                const areaId = card.dataset.areaId || (card.closest('.area-card')?.querySelector('.area-header-v3')?.dataset.areaId) || '';
+                const equipId = card.dataset.equipId || '';
+                const equipName = card.dataset.equipName || (card.querySelector('.equipment-title h6')?.textContent.trim()) || '';
+                equipments.push({ wrapperEl: wrapper, cardEl: card, areaId, equipId, equipName, originalParent: wrapper.parentElement, originalNext: wrapper.nextElementSibling });
+            });
+        }
+
+        function populateSelects() {
+            const areaSelect = document.getElementById('filter-area');
+            const equipSelect = document.getElementById('filter-equip');
+            if (!areaSelect || !equipSelect) return;
+
+            // populate areas
+            const areasMap = new Map();
+            document.querySelectorAll('.area-header-v3[data-area-id]').forEach(h => {
+                const id = h.dataset.areaId;
+                const label = h.querySelector('.area-label') ? h.querySelector('.area-label').textContent.trim() : ('Área ' + id);
+                if (!areasMap.has(id)) areasMap.set(id, label);
+            });
+            // clear existing except first option
+            areaSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+            areasMap.forEach((label, id) => {
+                const opt = document.createElement('option'); opt.value = id; opt.textContent = label; areaSelect.appendChild(opt);
+            });
+
+            // populate equipments
+            const equipsMap = new Map();
+            equipments.forEach(e => { if (!equipsMap.has(e.equipId)) equipsMap.set(e.equipId, e.equipName); });
+            equipSelect.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+            equipsMap.forEach((name, id) => {
+                const opt = document.createElement('option'); opt.value = id; opt.textContent = name; equipSelect.appendChild(opt);
+            });
+        }
+
+        function readStored() {
+            const area = localStorage.getItem(prefix + 'area') || '';
+            const equip = localStorage.getItem(prefix + 'equip') || '';
+            const page = parseInt(localStorage.getItem(prefix + 'page') || '1', 10) || 1;
+            return { area, equip, page };
+        }
+
+        function storeFilters(area, equip, page) {
+            if (area) localStorage.setItem(prefix + 'area', area); else localStorage.removeItem(prefix + 'area');
+            if (equip) localStorage.setItem(prefix + 'equip', equip); else localStorage.removeItem(prefix + 'equip');
+            if (page) localStorage.setItem(prefix + 'page', String(page)); else localStorage.removeItem(prefix + 'page');
+        }
+
+        function applyFiltersFromUI() { const area = document.getElementById('filter-area').value; const equip = document.getElementById('filter-equip').value; applyFilters(area, equip, 1); }
+
+        function applyFilters(area, equip, page = 1) {
+            const filtered = equipments.filter(e => {
+                if (area && String(e.areaId) !== String(area)) return false;
+                if (equip && String(e.equipId) !== String(equip)) return false;
+                return true;
+            });
+
+            const badge = document.getElementById('filter-active-badge');
+            if (badge) badge.style.display = ((area || equip) ? 'inline-block' : 'none');
+
+            // Hide original area cards when filter active
+            document.querySelectorAll('.area-card').forEach(ac => { ac.style.display = (area || equip) ? 'none' : ''; });
+
+            // move matching wrappers into filtered container
+            const container = document.getElementById('filtered-equipment-container');
+            container.innerHTML = '';
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-12"><div class="alert alert-secondary">Nenhum equipamento encontrado para os filtros selecionados.</div></div>';
+                renderPagination(0, page);
+                storeFilters(area, equip, page);
+                return;
+            }
+
+            // Pagination
+            const total = filtered.length; const pageCount = Math.ceil(total / PAGE_SIZE);
+            if (page < 1) page = 1; if (page > pageCount) page = pageCount;
+            currentPage = page;
+
+            const start = (page -1) * PAGE_SIZE; const end = Math.min(start + PAGE_SIZE, total);
+            for (let i = start; i < end; i++) {
+                const wrap = filtered[i].wrapperEl;
+                container.appendChild(wrap);
+            }
+
+            renderPagination(pageCount, page);
+            storeFilters(area, equip, page);
+        }
+
+        function renderPagination(pageCount, activePage) {
+            const nav = document.getElementById('filter-pagination');
+            if (!nav) return;
+            nav.innerHTML = '';
+            if (pageCount <= 1) return;
+
+            const ul = document.createElement('ul'); ul.className = 'pagination';
+
+            const makePageItem = (p, label = null, disabled = false, active = false) => {
+                const li = document.createElement('li'); li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+                const a = document.createElement('a'); a.className = 'page-link'; a.href = '#'; a.textContent = label || String(p);
+                a.addEventListener('click', (ev) => { ev.preventDefault(); if (!disabled) onPageClick(p); });
+                li.appendChild(a); return li;
+            };
+
+            ul.appendChild(makePageItem(1, '«', activePage === 1, activePage === 1));
+            for (let p = 1; p <= pageCount; p++) { ul.appendChild(makePageItem(p, String(p), false, p === activePage)); }
+            ul.appendChild(makePageItem(pageCount, '»', activePage === pageCount, activePage === pageCount));
+
+            nav.appendChild(ul);
+        }
+
+        function onPageClick(p) {
+            const stored = readStored(); const area = stored.area || document.getElementById('filter-area').value; const equip = stored.equip || document.getElementById('filter-equip').value;
+            // Before changing page, ensure we collect up-to-date equipments
+            collectEquipments();
+            // Move all wrappers back to original to avoid duplicates then reapply filter
+            restoreAllOriginals();
+            applyFilters(area, equip, p);
+        }
+
+        function restoreAllOriginals() {
+            // Move any wrappers currently in filtered container back to their original parents
+            equipments.forEach(e => {
+                if (!e.wrapperEl.parentElement || e.wrapperEl.parentElement.id === 'filtered-equipment-container') {
+                    // Try to insert before originalNext if exists
+                    try {
+                        if (e.originalNext && e.originalNext.parentElement === e.originalParent) {
+                            e.originalParent.insertBefore(e.wrapperEl, e.originalNext);
+                        } else {
+                            e.originalParent.appendChild(e.wrapperEl);
+                        }
+                    } catch(err) {
+                        e.originalParent.appendChild(e.wrapperEl);
+                    }
+                }
+            });
+            // show area cards
+            document.querySelectorAll('.area-card').forEach(ac => { ac.style.display = ''; });
+        }
+
+        function clearFilters() {
+            restoreAllOriginals();
+            localStorage.removeItem(prefix + 'area');
+            localStorage.removeItem(prefix + 'equip');
+            localStorage.removeItem(prefix + 'page');
+            document.getElementById('filter-area').value = '';
+            document.getElementById('filter-equip').value = '';
+            document.getElementById('filter-active-badge').style.display = 'none';
+            document.getElementById('filtered-equipment-container').innerHTML = '';
+            document.getElementById('filter-pagination').innerHTML = '';
+        }
+
+        function init() {
+            collectEquipments();
+            populateSelects();
+            const stored = readStored();
+            if (stored.area) document.getElementById('filter-area').value = stored.area;
+            if (stored.equip) document.getElementById('filter-equip').value = stored.equip;
+            document.getElementById('apply-filters').addEventListener('click', applyFiltersFromUI);
+            document.getElementById('clear-filters').addEventListener('click', (ev) => { ev.preventDefault(); clearFilters(); });
+
+            // If there are stored filters, apply them
+            if (stored.area || stored.equip) {
+                applyFilters(stored.area, stored.equip, stored.page || 1);
+            }
+        }
+
+        // inicializa após curto delay para garantir que o DOM esteja pronto e scripts anteriores carregados
+        document.addEventListener('DOMContentLoaded', () => setTimeout(init, 50));
+
+    })();
 </script>
     </div>
 @endsection

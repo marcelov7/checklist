@@ -2587,20 +2587,20 @@ function salvarResolucao(item, testeId) {
     if (!verificarOperacaoPermitida('salvar resolução')) return;
     
     const form = document.getElementById(`form_resolucao_${item}_${testeId}`);
-    // Validação no cliente: tamanho máximo 2MB e tipos permitidos (mensagem inline)
+    // Validação no cliente: tamanho máximo 10MB e tipos permitidos (mensagem inline)
     const fileInput = form.querySelector('input[type="file"]');
     const errorEl = form.querySelector('.resolucao-error');
     if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
     if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 10 * 1024 * 1024; // 10MB
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
         if (file.size > maxSize) {
             if (errorEl) {
-                errorEl.textContent = 'O arquivo é muito grande. Tamanho máximo permitido: 2MB.';
+                errorEl.textContent = 'O arquivo é muito grande. Tamanho máximo permitido: 10MB.';
                 errorEl.style.display = 'block';
             } else {
-                alert('O arquivo é muito grande. Tamanho máximo permitido: 2MB.');
+                alert('O arquivo é muito grande. Tamanho máximo permitido: 10MB.');
             }
             return;
         }
