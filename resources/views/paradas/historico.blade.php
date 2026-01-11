@@ -142,10 +142,10 @@
                 </div>
                 <div class="card-body p-0">
                     @forelse($paradas as $parada)
-                        @php
-                            $percentualGeral = $parada->getPercentualCompleto();
-                            $percentualPorArea = $parada->getPercentualPorArea();
-                        @endphp
+            @php
+                $percentualGeral = $parada->getPercentualCompleto();
+                $percentualPorArea = $parada->getPercentualPorArea();
+            @endphp
                         <div class="parada-item {{ !$loop->last ? 'border-bottom' : '' }}" style="touch-action: pan-y; position: relative;">
                             <div class="p-4" style="pointer-events: none;">
                                 <!-- Cabeçalho da Parada -->
@@ -308,35 +308,7 @@
         </div>
     </div>
 
-    <!-- Filtros Rápidos -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros Rápidos</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group flex-wrap" role="group">
-                        <a href="{{ route('paradas.historico') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-list me-1"></i>Todas
-                        </a>
-                        <a href="{{ route('paradas.historico') }}?status=em_andamento" class="btn btn-outline-primary">
-                            <i class="fas fa-play me-1"></i>Em Andamento
-                        </a>
-                        <a href="{{ route('paradas.historico') }}?status=concluida" class="btn btn-outline-success">
-                            <i class="fas fa-check me-1"></i>Finalizadas
-                        </a>
-                        <a href="{{ route('paradas.historico') }}?tipo=preventiva" class="btn btn-outline-warning">
-                            <i class="fas fa-calendar-alt me-1"></i>Preventivas
-                        </a>
-                        <a href="{{ route('paradas.historico') }}?tipo=corretiva" class="btn btn-outline-danger">
-                            <i class="fas fa-exclamation-triangle me-1"></i>Corretivas
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <script>
@@ -370,102 +342,15 @@ function reabrirParada(paradaId) {
     }
 }
 
-// Otimização TOTAL para mobile: cards estáticos e botões funcionais
+// Função para reabrir parada (apenas admin)
 document.addEventListener('DOMContentLoaded', function() {
-    // Detectar se é mobile
-    const isMobile = window.innerWidth <= 991;
-    
-    if (isMobile) {
-        // CRÍTICO: Estabilizar todos os cards completamente
-        const paradaItems = document.querySelectorAll('.parada-item, .card');
-        paradaItems.forEach(item => {
-            // Forçar remoção de todas as transições e transformações
-            item.style.transition = 'none';
-            item.style.transform = 'none';
-            item.style.willChange = 'auto';
-            
-            // Prevenir qualquer animação CSS que possa interferir
-            item.addEventListener('touchstart', function(e) {
-                // NÃO fazer nada no card - manter completamente estático
-                e.stopPropagation();
-            });
-            
-            item.addEventListener('touchmove', function(e) {
-                // Evitar qualquer mudança visual durante scroll
-                this.style.transform = 'none';
-                this.style.transition = 'none';
-            });
+    // Garantir que os botões funcionem corretamente em dispositivos móveis
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
         });
-        
-        // Otimizar TODOS os botões para melhor resposta ao toque
-        const allButtons = document.querySelectorAll('.btn, .dropdown-toggle, .btn-group .btn');
-        allButtons.forEach(button => {
-            // Remover animações que podem causar lag
-            button.style.transition = 'none';
-            button.style.willChange = 'auto';
-            
-            // Aumentar z-index para garantir que ficam "por cima" do card
-            button.style.position = 'relative';
-            button.style.zIndex = '10';
-            
-            // Feedback visual direto no botão (não no card pai)
-            button.addEventListener('touchstart', function(e) {
-                e.stopPropagation(); // CRÍTICO: evitar propagação para o card
-                this.style.opacity = '0.8';
-            });
-            
-            button.addEventListener('touchend', function(e) {
-                e.stopPropagation();
-                setTimeout(() => {
-                    this.style.opacity = '1';
-                }, 100);
-            });
-            
-            // Garantir que cliques funcionem sem interferência
-            button.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-        });
-        
-        // Otimizar dropdowns especificamente
-        const dropdownButtons = document.querySelectorAll('.dropdown-toggle');
-        dropdownButtons.forEach(button => {
-            button.style.zIndex = '15'; // Ainda maior que outros botões
-            
-            // Remover completamente animações do Bootstrap
-            button.addEventListener('shown.bs.dropdown', function() {
-                const menu = this.nextElementSibling;
-                if (menu) {
-                    menu.style.transition = 'none';
-                    menu.style.animation = 'none';
-                    menu.style.transform = 'none';
-                }
-            });
-        });
-        
-        // Otimizar menus dropdown
-        const dropdownMenus = document.querySelectorAll('.dropdown-menu');
-        dropdownMenus.forEach(menu => {
-            menu.style.transition = 'none';
-            menu.style.animation = 'none';
-            menu.style.transform = 'none';
-            menu.style.zIndex = '1000';
-        });
-        
-        // Melhorar fechamento de dropdowns
-        document.addEventListener('touchstart', function(e) {
-            // Fechar dropdowns quando tocar fora, mas não interferir com botões
-            if (!e.target.closest('.dropdown')) {
-                const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
-                openDropdowns.forEach(menu => {
-                    const dropdown = bootstrap.Dropdown.getInstance(menu.previousElementSibling);
-                    if (dropdown) dropdown.hide();
-                });
-            }
-        });
-        
-        console.log('Mobile optimizations applied: cards stabilized, buttons enhanced');
-    }
+    });
 });
 </script>
 
@@ -477,153 +362,22 @@ document.addEventListener('DOMContentLoaded', function() {
     border-radius: 0;
 }
 
-/* Desktop: animações completas */
-@media (min-width: 992px) {
-    .parada-item {
-        transition: all 0.2s ease;
-    }
-    
-    .parada-item:hover {
-        background-color: #f8f9fa;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-}
-
-/* Mobile: sem animações, estabilidade total dos cards */
+/* Ajustes para dispositivos móveis */
 @media (max-width: 991.98px) {
-    .parada-item {
-        transition: none !important;
-        transform: none !important;
-    }
-    
-    /* IMPORTANTE: Remover TODOS os efeitos visuais que causam movimento no card */
-    .parada-item:hover,
-    .parada-item:active,
-    .parada-item:focus,
-    .parada-item:focus-within {
-        background-color: white !important;
-        transform: none !important;
-        box-shadow: none !important;
-        transition: none !important;
-    }
-    
-    /* Cards devem permanecer completamente estáticos */
-    .card {
-        transition: none !important;
-        transform: none !important;
-    }
-    
-    .card:hover,
-    .card:active,
-    .card:focus {
-        transform: none !important;
-        box-shadow: inherit !important;
-        background-color: inherit !important;
-    }
-    
-    /* Otimização dos botões para mobile - área de toque maior */
     .btn-group .btn {
-        transition: none !important;
         min-width: 44px;
-        min-height: 44px;
-        padding: 0.75rem;
-        position: relative;
-        z-index: 10;
-    }
-    
-    /* Botões devem ter feedback visual próprio, não do card pai */
-    .btn:active {
-        background-color: var(--bs-btn-active-bg) !important;
-        border-color: var(--bs-btn-active-border-color) !important;
-        transform: none !important;
-    }
-    
-    .dropdown-toggle {
-        transition: none !important;
-        position: relative;
-        z-index: 15;
+        padding: 8px;
     }
     
     .dropdown-menu {
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
-        position: absolute !important;
-        z-index: 1000 !important;
+        min-width: 200px;
     }
     
-    /* Evitar propagação de eventos do card para os botões */
-    .btn-group {
-        position: relative;
-        z-index: 10;
-        pointer-events: auto;
+    .progress {
+        min-width: 80px;
     }
-    
-    /* FORÇAR estabilidade total - override de qualquer CSS externo */
-    * {
-        -webkit-transform: none !important;
-        -moz-transform: none !important;
-        -ms-transform: none !important;
-        -o-transform: none !important;
-        transform: none !important;
-    }
-    
-    /* Remover animações do Bootstrap que podem interferir */
-    .card,
-    .parada-item,
-    .card-body,
-    .row > div {
-        -webkit-transition: none !important;
-        -moz-transition: none !important;
-        -ms-transition: none !important;
-        -o-transition: none !important;
-        transition: none !important;
-        -webkit-animation: none !important;
-        -moz-animation: none !important;
-        -ms-animation: none !important;
-        -o-animation: none !important;
-        animation: none !important;
-    }
-    
-    /* Garantir que elementos filhos não herdem animações problemáticas */
-    .parada-item * {
-        transform: none !important;
-        transition: none !important;
-    }
-    
-    /* Exceção apenas para os botões que precisam de feedback visual */
-    .btn,
-    .dropdown-toggle,
-    .btn-group,
-    .dropdown {
-        pointer-events: auto !important;
-        transition: opacity 0.1s ease !important;
-    }
-    
-    /* Garantir que links e botões dentro dos cards funcionem */
-    .parada-item a,
-    .parada-item button,
-    .parada-item .btn-group,
-    .parada-item .dropdown {
-        pointer-events: auto !important;
-        position: relative;
-        z-index: 10;
-    }
-    
-    /* Container do card: permitir apenas scroll, não cliques */
-    .parada-item {
-        pointer-events: none !important;
-        touch-action: pan-y !important;
-    }
-    
-    /* Re-habilitar eventos apenas nos elementos interativos */
-    .parada-item .btn,
-    .parada-item .dropdown-toggle,
-    .parada-item .dropdown-item,
-    .parada-item a {
-        pointer-events: auto !important;
-    }
+}
+
 }
 
 .parada-item.border-bottom {

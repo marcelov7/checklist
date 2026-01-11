@@ -269,7 +269,8 @@
 
                 <!-- Versão Mobile - Cards -->
                 <div class="card-body p-2 d-lg-none">
-                    @foreach($testesArea as $teste)
+                    @php $uniqueTestes = collect($testesArea)->unique('equipamento_id'); @endphp
+                    @foreach($uniqueTestes as $teste)
                         @php
                             $checklistItems = ['ar_comprimido', 'protecoes_eletricas', 'protecoes_mecanicas', 'chave_remoto', 'inspecionado'];
                             

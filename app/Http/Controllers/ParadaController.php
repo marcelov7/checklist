@@ -149,7 +149,7 @@ class ParadaController extends Controller
         
         // Se não há equipamentos selecionados, mostrar mensagem apropriada
         if ($equipamentosIds->isEmpty()) {
-            return view('paradas.show', compact('parada'))
+            return view('paradas.show_v2', compact('parada'))
                    ->with('semEquipamentos', true);
         }
         
@@ -170,7 +170,35 @@ class ParadaController extends Controller
         // Converter Collection em array associativo para facilitar acesso no template
         $percentualPorArea = $percentualPorAreaCollection->pluck('percentual', 'id')->toArray();
 
-        return view('paradas.show', compact('parada', 'areas', 'percentualGeral', 'percentualPorArea'));
+        return view('paradas.show_v2', compact('parada', 'areas', 'percentualGeral', 'percentualPorArea'));
+    }
+
+    /**
+     * Display the specified resource (layout v2).
+     */
+    public function showV2(Parada $parada)
+    {
+        $equipamentosIds = $parada->testes()->pluck('equipamento_id');
+
+        if ($equipamentosIds->isEmpty()) {
+            return view('paradas.show_v2', compact('parada'))
+                   ->with('semEquipamentos', true);
+        }
+
+        $areas = Area::whereHas('equipamentos', function($query) use ($equipamentosIds) {
+            $query->whereIn('id', $equipamentosIds);
+        })->with(['equipamentos' => function($query) use ($parada, $equipamentosIds) {
+            $query->whereIn('id', $equipamentosIds)
+                  ->with(['testes' => function($testQuery) use ($parada) {
+                      $testQuery->where('parada_id', $parada->id);
+                  }]);
+        }])->get();
+
+        $percentualGeral = $parada->getPercentualCompleto();
+        $percentualPorAreaCollection = $parada->getPercentualPorArea();
+        $percentualPorArea = $percentualPorAreaCollection->pluck('percentual', 'id')->toArray();
+
+        return view('paradas.show_v2', compact('parada', 'areas', 'percentualGeral', 'percentualPorArea'));
     }
 
     /**
@@ -181,10 +209,18 @@ class ParadaController extends Controller
         $percentualGeral = $parada->getPercentualCompleto();
         $percentualPorArea = $parada->getPercentualPorArea();
         
+        // Contagens para exibição (equipamentos resolvidos e pendentes)
+        $totalTestes = $parada->total_testes;
+        $testesOk = $parada->testes_ok;
+        $testesPendentes = max(0, $totalTestes - $testesOk);
+
         return response()->json([
             'success' => true,
             'percentual' => $percentualGeral,
-            'areas' => $percentualPorArea
+            'areas' => $percentualPorArea,
+            'total_testes' => $totalTestes,
+            'testes_ok' => $testesOk,
+            'testes_pendentes' => $testesPendentes,
         ]);
     }
 

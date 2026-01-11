@@ -141,8 +141,8 @@
                     }
                 }
                 
-                // Calcular percentual de conclusão (apenas equipamentos realmente completos)
-                $percentualConclusao = $totalEquipamentos > 0 ? round(($equipamentosCompletos / $totalEquipamentos) * 100, 1) : 0;
+                // Calcular percentual de conclusão usando o mesmo método do histórico
+                $percentualGeral = $parada->getPercentualCompleto();
                 
                 // Dados sempre atuais via controller
             @endphp
@@ -182,18 +182,18 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="fw-medium">Progresso Geral:</span>
-                    <span class="fw-bold">{{ $percentualConclusao }}%</span>
+                    <span class="fw-bold">{{ $percentualGeral }}%</span>
                 </div>
                 <div class="progress" style="height: 20px;">
                     <div class="progress-bar 
-                        @if($percentualConclusao >= 100) bg-success
-                        @elseif($percentualConclusao >= 75) bg-info
-                        @elseif($percentualConclusao >= 50) bg-warning
+                        @if($percentualGeral >= 100) bg-success
+                        @elseif($percentualGeral >= 75) bg-info
+                        @elseif($percentualGeral >= 50) bg-warning
                         @else bg-danger
                         @endif" 
                         role="progressbar" 
-                        style="width: {{ $percentualConclusao }}%">
-                        {{ $percentualConclusao }}%
+                        style="width: {{ $percentualGeral }}%">
+                        {{ $percentualGeral }}%
                     </div>
                 </div>
             </div>
@@ -315,12 +315,27 @@
                                             @php $status = $teste->{$item . '_status'}; @endphp
                                             @if($status)
                                                 @if($status === 'ok')
-                                                    <span class="text-success">✓ OK</span>
+                                                    <span class="text-success">
+                                                        <i class="fas fa-check-circle me-1"></i>OK
+                                                    </span>
                                                 @elseif($status === 'problema')
-                                                    <span class="text-danger">✗ PROBLEMA</span>
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>PROBLEMA
+                                                    </span>
                                                 @elseif($status === 'nao_aplica')
-                                                    <span class="text-muted">N/A</span>
+                                                    <span class="text-info">
+                                                        <i class="fas fa-ban me-1"></i>N/A
+                                                    </span>
+                                                @else
+                                                    <span class="text-warning">
+                                                        <i class="fas fa-clock me-1"></i>PENDENTE
+                                                    </span>
                                                 @endif
+                                                <br>
+                                            @else
+                                                <span class="text-warning">
+                                                    <i class="fas fa-clock me-1"></i>PENDENTE
+                                                </span>
                                                 <br>
                                             @endif
                                         @endforeach
@@ -379,33 +394,63 @@
             <!-- Versão Mobile - Cards -->
             <div class="card-body p-2 d-lg-none">
                 @foreach($testesArea as $teste)
-                    @php
-                        $equipamento = $teste->equipamento;
-                        // Calcular status geral (mesmo código acima)
-                        $checklistItems = ['ar_comprimido', 'protecoes_eletricas', 'protecoes_mecanicas', 'chave_remoto', 'inspecionado'];
-                        $hasProblema = false;
-                        $hasOk = false;
-                        $itensAplicaveis = 0;
-                        $itensOkOuNA = 0;
-                        
-                        foreach($checklistItems as $item) {
-                            $status = $teste->{$item . '_status'};
-                            if($status) {
-                                if($status === 'nao_aplica') {
-                                    $itensOkOuNA++;
-                                } elseif($status === 'ok') {
-                                    $itensAplicaveis++;
-                                    $itensOkOuNA++;
-                                    $hasOk = true;
-                                } elseif($status === 'problema') {
-                                    $itensAplicaveis++;
-                                    $hasProblema = true;
-                                } else {
-                                    $itensAplicaveis++;
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ $equipamento->nome }}</h6>
+                            <p class="card-subtitle mb-2 text-muted">
+                                <code class="small">{{ $equipamento->tag }}</code>
+                            </p>
+                            
+                            @php
+                                $equipamento = $teste->equipamento;
+                                // Calcular status geral (mesmo código acima)
+                                $checklistItems = ['ar_comprimido', 'protecoes_eletricas', 'protecoes_mecanicas', 'chave_remoto', 'inspecionado'];
+                                $hasProblema = false;
+                                $hasOk = false;
+                                $itensAplicaveis = 0;
+                                $itensOkOuNA = 0;
+                                
+                                foreach($checklistItems as $item) {
+                                    $status = $teste->{$item . '_status'};
+                                    if($status) {
+                                        if($status === 'nao_aplica') {
+                                            $itensOkOuNA++;
+                                        } elseif($status === 'ok') {
+                                            $itensAplicaveis++;
+                                            $itensOkOuNA++;
+                                            $hasOk = true;
+                                        } elseif($status === 'problema') {
+                                            $itensAplicaveis++;
+                                            $hasProblema = true;
+                                        } else {
+                                            $itensAplicaveis++;
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            
+                                // Status dos itens com ícones
+                                foreach($checklistLabels as $item => $label) {
+                                    $status = $teste->{$item . '_status'};
+                                    echo '<div class="mb-1">';
+                                    echo '<strong class="me-2">' . $label . ':</strong>';
+                                    if($status) {
+                                        if($status === 'ok') {
+                                            echo '<span class="text-success"><i class="fas fa-check-circle me-1"></i>OK</span>';
+                                        } elseif($status === 'problema') {
+                                            echo '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>PROBLEMA</span>';
+                                        } elseif($status === 'nao_aplica') {
+                                            echo '<span class="text-info"><i class="fas fa-ban me-1"></i>N/A</span>';
+                                        } else {
+                                            echo '<span class="text-warning"><i class="fas fa-clock me-1"></i>PENDENTE</span>';
+                                        }
+                                    } else {
+                                        echo '<span class="text-warning"><i class="fas fa-clock me-1"></i>PENDENTE</span>';
+                                    }
+                                    echo '</div>';
+                                }
+                            @endphp
                         
+                        @php
                         $totalItensComStatus = 0;
                         foreach($checklistItems as $item) {
                             if($teste->{$item . '_status'}) {
@@ -429,7 +474,7 @@
                             'chave_remoto' => 'Chave Remoto',
                             'inspecionado' => 'Inspeção Visual'
                         ];
-                    @endphp
+                        @endphp
                     
                     <div class="card mb-2 border-start border-3 @if($statusGeral === 'COMPLETO') border-success @elseif($statusGeral === 'PROBLEMA') border-danger @elseif($statusGeral === 'EM ANDAMENTO') border-warning @else border-secondary @endif">
                         <div class="card-body p-3">

@@ -79,7 +79,15 @@ class DashboardController extends Controller
         // Progresso geral do sistema usando lógica dinâmica
         $paradasParaProgresso = Parada::whereIn('status', ['em_andamento', 'concluida'])
             ->with(['testes' => function($query) {
-                $query->orderBy('updated_at', 'desc');
+                $query->select([
+                    'id',
+                    'parada_id',
+                    'ar_comprimido_status',
+                    'protecoes_eletricas_status',
+                    'protecoes_mecanicas_status',
+                    'chave_remoto_status',
+                    'inspecionado_status'
+                ]);
             }])
             ->get();
 
@@ -87,16 +95,15 @@ class DashboardController extends Controller
         $equipamentosCompletoGeral = 0;
 
         foreach($paradasParaProgresso as $parada) {
+            \Log::info("Calculando progresso para parada " . $parada->id);
+            $progressoParada = $this->calcularProgressoDinamico($parada);
+            \Log::info("Progresso da parada: " . $progressoParada . "%");
+            $equipamentosCompletoGeral += ($progressoParada * $parada->testes->count()) / 100;
             $totalEquipamentosGeral += $parada->testes->count();
-            
-            foreach($parada->testes as $teste) {
-                if($this->verificarEquipamentoCompleto($teste)) {
-                    $equipamentosCompletoGeral++;
-                }
-            }
         }
 
         $progressoGeral = $totalEquipamentosGeral > 0 ? round(($equipamentosCompletoGeral / $totalEquipamentosGeral) * 100, 1) : 0;
+        \Log::info("Progresso geral calculado: " . $progressoGeral . "%");
 
         return view('dashboard', compact(
             'totalParadas',
@@ -126,40 +133,24 @@ class DashboardController extends Controller
             return 0;
         }
 
-        $equipamentosCompletos = 0;
+        $progressoTotal = 0;
 
         foreach($parada->testes as $teste) {
-            if($this->verificarEquipamentoCompleto($teste)) {
-                $equipamentosCompletos++;
-            }
+            // Log para debug
+            \Log::info("Teste ID: " . $teste->id . ", Progress: " . $teste->checklist_progress);
+            $progressoTotal += intval($teste->checklist_progress);
         }
 
-        return round(($equipamentosCompletos / $totalEquipamentos) * 100, 1);
+        $progresso = round($progressoTotal / $totalEquipamentos, 1);
+        \Log::info("Progresso da parada " . $parada->id . ": " . $progresso . "%");
+        
+        return $progresso;
     }
 
-    /**
-     * Verifica se um equipamento está completo baseado no status dos itens do checklist
-     */
     private function verificarEquipamentoCompleto($teste)
     {
-        // Usar a mesma lógica dos relatórios
-        $checklistItems = ['ar_comprimido', 'protecoes_eletricas', 'protecoes_mecanicas', 'chave_remoto', 'inspecionado'];
-        
-        $itensOkOuNA = 0;
-        $totalItensComStatus = 0;
-        
-        // Contar itens OK, N/A e com status definido
-        foreach($checklistItems as $item) {
-            $status = $teste->{$item . '_status'};
-            if($status) {
-                $totalItensComStatus++;
-                if($status === 'ok' || $status === 'nao_aplica') {
-                    $itensOkOuNA++;
-                }
-            }
-        }
-        
-        // Equipamento completo se todos os itens com status estão OK ou N/A
-        return $totalItensComStatus > 0 && $itensOkOuNA === $totalItensComStatus;
+        // Log para debug
+        \Log::info("Verificando equipamento completo - Teste ID: " . $teste->id . ", Progress: " . $teste->checklist_progress);
+        return intval($teste->checklist_progress) === 100;
     }
 }

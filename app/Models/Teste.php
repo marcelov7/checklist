@@ -109,15 +109,34 @@ class Teste extends Model
             'inspecionado_status'
         ];
 
-        $concluidos = 0;
+        $totalItens = count($statusFields);
+        $itensNaoAplica = 0;
+        $itensOk = 0;
+
+        // Primeiro, conta quantos itens são N/A e OK
         foreach ($statusFields as $campo) {
-            // Considera concluído se o status for 'ok', 'problema', 'nao_ok' ou 'nao_aplica' (não pendente)
-            if (in_array($this->$campo, ['ok', 'problema', 'nao_ok', 'nao_aplica'])) {
-                $concluidos++;
+            $status = $this->$campo;
+            if ($status === 'nao_aplica') {
+                $itensNaoAplica++;
+            } elseif ($status === 'ok') {
+                $itensOk++;
             }
         }
 
-        return round(($concluidos / count($statusFields)) * 100);
+        // Se todos os itens forem N/A, retorna 100%
+        if ($itensNaoAplica === $totalItens) {
+            return 100;
+        }
+
+        // Calcula o peso de cada item considerando a redistribuição dos N/A
+        $itensAplicaveis = $totalItens - $itensNaoAplica;
+        if ($itensAplicaveis === 0) {
+            return 0;
+        }
+
+        // Calcula o percentual considerando apenas itens OK e redistribuindo o peso dos N/A
+        $percentual = ($itensOk / $itensAplicaveis) * 100;
+        return round($percentual);
     }
 
     /**

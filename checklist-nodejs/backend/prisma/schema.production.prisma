@@ -1,0 +1,158 @@
+// Schema Prisma para Produção (PostgreSQL)
+// Para usar este schema em produção:
+// 1. Renomeie este arquivo para schema.prisma
+// 2. Configure DATABASE_URL para PostgreSQL no .env
+// 3. Execute: npx prisma migrate deploy
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  paradas   Parada[]
+
+  @@map("users")
+}
+
+model Area {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  paradas     Parada[]
+  equipamentos Equipamento[]
+
+  @@map("areas")
+}
+
+model Equipamento {
+  id           String   @id @default(cuid())
+  numeracao    String   @unique
+  nome         String
+  tipo         String?
+  fabricante   String?
+  modelo       String?
+  numeroSerie  String?
+  status       String   @default("ATIVO")
+  prioridade   Int      @default(3)
+  observacoes  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relacionamento opcional com Area
+  areaId       String?
+  area         Area?    @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@map("equipamentos")
+}
+
+model Parada {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("PLANEJADA")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamentos
+  areaId      String
+  area        Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  checklists  Checklist[]
+
+  @@map("paradas")
+}
+
+model Checklist {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamento com Parada
+  paradaId    String
+  parada      Parada   @relation(fields: [paradaId], references: [id], onDelete: Cascade)
+  
+  items       ChecklistItem[]
+  executions  ChecklistExecution[]
+
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String   @id @default(cuid())
+  description String
+  order       Int
+  required    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamento com Checklist
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  
+  executions  ChecklistItemExecution[]
+
+  @@map("checklist_items")
+}
+
+model ChecklistExecution {
+  id          String   @id @default(cuid())
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  status      String   @default("EM_ANDAMENTO")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamento com Checklist
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  
+  itemExecutions ChecklistItemExecution[]
+
+  @@map("checklist_executions")
+}
+
+model ChecklistItemExecution {
+  id          String   @id @default(cuid())
+  completed   Boolean  @default(false)
+  notes       String?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamentos
+  executionId String
+  execution   ChecklistExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  
+  itemId      String
+  item        ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([executionId, itemId])
+  @@map("checklist_item_executions")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
