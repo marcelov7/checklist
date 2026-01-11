@@ -312,7 +312,7 @@
                             @foreach($area->equipamentos as $equipamento)
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
-                                <div class="col-12">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
                                     <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}">
                                         <!-- Header do Equipamento -->
                                         <div class="equipment-header">
@@ -325,7 +325,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="progress me-2" style="width: 80px; height: 6px;">
+                                                    <div class="progress me-2 equipment-progress" style="height: 6px;">
                                                         <div class="progress-bar bg-{{ $teste->checklist_progress == 100 ? 'success' : ($teste->checklist_progress > 0 ? 'warning' : 'danger') }}" 
                                                              style="width: {{ $teste->checklist_progress }}%"></div>
                                                     </div>
