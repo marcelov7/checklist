@@ -2120,9 +2120,13 @@
                 }
             });
             
+            // Detectar se está em mobile
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             // Interceptar envio de formulários para verificar token
             $('form').on('submit', function(e) {
-                let tokenInput = $(this).find('input[name="' + csrfParam + '"]');
+                let $form = $(this);
+                let tokenInput = $form.find('input[name="' + csrfParam + '"]');
                 
                 // Se não houver input de token, criar um
                 if (tokenInput.length === 0) {
@@ -2131,25 +2135,40 @@
                         name: csrfParam,
                         value: csrfToken
                     });
-                    $(this).append(tokenInput);
+                    $form.append(tokenInput);
+                }
+                
+                // Em mobile, sempre buscar token fresco antes de submeter
+                if (isMobile && !$form.data('csrf-refreshed')) {
+                    e.preventDefault();
+                    
+                    $.get('/refresh-csrf')
+                        .done(function(response) {
+                            if (response.token) {
+                                csrfToken = response.token;
+                                $('meta[name="csrf-token"]').attr('content', csrfToken);
+                                tokenInput.val(csrfToken);
+                                $form.data('csrf-refreshed', true);
+                                $form.submit();
+                            }
+                        })
+                        .fail(function() {
+                            // Se falhar, tentar com token atual
+                            tokenInput.val(csrfToken);
+                            $form.data('csrf-refreshed', true);
+                            $form.submit();
+                        });
+                    return false;
                 }
                 
                 // Verificar se o token está válido
                 let token = tokenInput.val();
                 if (!token || token.length === 0 || token !== csrfToken) {
-                    e.preventDefault();
-                    tokenInput.val(csrfToken); // Atualizar com o token atual
-                    
-                    // Se ainda estiver inválido, atualizar do servidor
-                    if (!csrfToken || csrfToken.length === 0) {
-                        refreshCSRFToken();
-                        return false;
-                    }
-                    
-                    // Tentar enviar o formulário novamente
-                    $(this).submit();
-                    return false;
+                    tokenInput.val(csrfToken);
                 }
+                
+                // Limpar flag após submit
+                $form.data('csrf-refreshed', false);
             });
             
             // Atualizar token periodicamente (a cada 30 minutos)
