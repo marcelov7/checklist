@@ -48,6 +48,7 @@ Route::middleware(['auth.session'])->group(function () {
 
     // Rotas para Paradas
     Route::resource('paradas', ParadaController::class);
+    Route::get('paradas/{parada}/v2', [ParadaController::class, 'showV2'])->name('paradas.show-v2');
     Route::get('/paradas/{parada}/select-equipment', [ParadaController::class, 'selectEquipment'])->name('paradas.select-equipment');
     Route::post('/paradas/{parada}/store-equipment', [ParadaController::class, 'storeEquipment'])->name('paradas.store-equipment');
     Route::get('/paradas/{parada}/debug-equipment', [ParadaController::class, 'debugEquipment'])->name('paradas.debug-equipment');
@@ -86,5 +87,11 @@ Route::middleware(['auth.session'])->group(function () {
         Route::get('perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('perfil', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('perfil/senha', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        // Rota para atualização do token CSRF
+        Route::get('/refresh-csrf', function () {
+            return response()->json([
+                'token' => csrf_token()
+            ]);
+        });
     });
 });

@@ -21,50 +21,6 @@
     </div>
 </div>
 
-<!-- Filtros -->
-<div class="card mb-4">
-    <!-- Mobile Filter Toggle -->
-    <div class="d-md-none mobile-filter-toggle" onclick="toggleMobileFilters()">
-        <div class="d-flex align-items-center justify-content-between">
-            <span><i class="fas fa-filter me-2"></i>Filtros</span>
-            <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
-        </div>
-    </div>
-    
-    <div class="card-body mobile-filter-content" id="filterContent">
-        <form method="GET" action="{{ route('usuarios.index') }}" class="row g-3">
-            <div class="col-12 col-md-3">
-                <label for="perfil" class="form-label">Perfil</label>
-                <select class="form-select" name="perfil" id="perfil">
-                    <option value="">Todos os perfis</option>
-                    <option value="admin" {{ request('perfil') === 'admin' ? 'selected' : '' }}>Administrador</option>
-                    <option value="operador" {{ request('perfil') === 'operador' ? 'selected' : '' }}>Operador</option>
-                    <option value="manutencao" {{ request('perfil') === 'manutencao' ? 'selected' : '' }}>Manutenção</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-3">
-                <label for="status" class="form-label">Status</label>
-                <select class="form-select" name="status" id="status">
-                    <option value="">Todos os status</option>
-                    <option value="ativo" {{ request('status') === 'ativo' ? 'selected' : '' }}>Ativo</option>
-                    <option value="inativo" {{ request('status') === 'inativo' ? 'selected' : '' }}>Inativo</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4">
-                <label for="search" class="form-label">Buscar</label>
-                <input type="text" class="form-control" name="search" id="search" 
-                       placeholder="Nome ou email..." value="{{ request('search') }}">
-            </div>
-            <div class="col-12 col-md-2">
-                <label class="form-label d-block">&nbsp;</label>
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-search"></i> <span class="d-none d-sm-inline">Filtrar</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- Lista de Usuários -->
 <div class="card">
     <div class="card-header">
@@ -73,6 +29,75 @@
             <span class="badge bg-secondary ms-2">{{ $users->total() }}</span>
         </h5>
     </div>
+
+    <!-- Filtros -->
+    <div class="border-bottom">
+        <!-- Mobile Filter Toggle -->
+        <div class="d-md-none d-flex align-items-center p-2" onclick="toggleMobileFilters()">
+            <div class="d-flex align-items-center flex-grow-1">
+                <i class="fas fa-filter me-2"></i>
+                <span>Filtros</span>
+                @if(request()->anyFilled(['perfil', 'status', 'search']))
+                    <span class="badge bg-primary ms-2">Filtros ativos</span>
+                @endif
+            </div>
+            <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+        </div>
+        
+        <div class="p-1" id="filterContent">
+            <form method="GET" action="{{ route('usuarios.index') }}" class="row g-1">
+                <div class="col-12 col-md-3">
+                    <label for="perfil" class="form-label small mb-0">Perfil</label>
+                    <select class="form-select form-select-sm py-0" name="perfil" id="perfil">
+                        <option value="">Todos os perfis</option>
+                        @foreach($perfis as $value => $label)
+                            <option value="{{ $value }}" {{ request('perfil') === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="status" class="form-label small mb-0">Status</label>
+                    <select class="form-select form-select-sm py-0" name="status" id="status">
+                        <option value="">Todos os status</option>
+                        @foreach($statusOptions as $value => $label)
+                            <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="search" class="form-label small mb-0">Buscar</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control py-0" name="search" id="search" 
+                               placeholder="Nome, email ou departamento..." value="{{ request('search') }}">
+                        @if(request('search'))
+                            <a href="{{ route('usuarios.index', array_merge(request()->except('search'), ['page' => 1])) }}" 
+                               class="btn btn-outline-secondary py-0" title="Limpar busca">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label small mb-0 d-block">&nbsp;</label>
+                    <div class="d-flex gap-1">
+                        <button type="submit" class="btn btn-primary btn-sm py-0 flex-grow-1">
+                            <i class="fas fa-search"></i> <span class="d-none d-sm-inline">Filtrar</span>
+                        </button>
+                        @if(request()->anyFilled(['perfil', 'status', 'search']))
+                            <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary btn-sm py-0" title="Limpar filtros">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card-body">
         @if($users->count() > 0)
             <!-- Desktop Table -->
@@ -302,10 +327,16 @@
 
 /* Mobile filter improvements */
 @media (min-width: 768px) {
-    .mobile-filter-toggle {
-        display: none;
+    #filterContent {
+        display: block !important;
     }
+}
+
+@media (max-width: 767px) {
     .mobile-filter-content {
+        transition: all 0.3s ease;
+    }
+    #filterContent.show {
         display: block !important;
     }
 }
@@ -316,12 +347,14 @@ function toggleMobileFilters() {
     const content = document.getElementById('filterContent');
     const icon = document.getElementById('filterToggleIcon');
     
-    content.classList.toggle('show');
-    
-    if (content.classList.contains('show')) {
+    if (content.style.display === 'none' || !content.classList.contains('show')) {
+        content.style.display = 'block';
+        content.classList.add('show');
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
     } else {
+        content.style.display = 'none';
+        content.classList.remove('show');
         icon.classList.remove('fa-chevron-up');
         icon.classList.add('fa-chevron-down');
     }

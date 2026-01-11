@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-param" content="_token">
     <title>@yield('title', 'Sistema de Checklist de Paradas')</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Sistema de checklist para paradas industriais com funcionamento offline">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Checklist">
+    <meta name="msapplication-TileColor" content="#007bff">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+    
+    <!-- External CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -252,11 +271,11 @@
             .navbar {
                 padding: 0.5rem 1rem;
                 min-height: 56px;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1100;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 1100 !important;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
             
@@ -267,29 +286,29 @@
             
             /* Sidebar mobile como overlay */
             .sidebar {
-                position: fixed;
-                top: 0;
-                left: -300px;
-                width: 300px;
-                height: 100vh;
-                z-index: 1200;
-                transition: left 0.3s ease;
-                padding-top: 76px; /* altura da navbar */
-                background: linear-gradient(180deg, var(--secondary-blue), var(--dark-blue));
-                box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+                position: fixed !important;
+                top: 0 !important;
+                left: -300px !important;
+                width: 300px !important;
+                height: 100vh !important;
+                z-index: 1200 !important;
+                transition: left 0.3s ease !important;
+                padding-top: 76px !important; /* altura da navbar */
+                background: linear-gradient(180deg, var(--secondary-blue), var(--dark-blue)) !important;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
             }
             
             .sidebar.show {
-                left: 0;
+                left: 0 !important;
             }
             
             /* Conteúdo principal mobile */
             .main-content {
-                margin-left: 0;
-                padding: 15px;
-                margin-top: 76px; /* espaço para navbar mobile - ajustado para altura correta */
-                width: 100%;
-                min-height: calc(100vh - 76px);
+                margin-left: 0 !important;
+                padding: 15px !important;
+                margin-top: 76px !important; /* espaço para navbar mobile - ajustado para altura correta */
+                width: 100% !important;
+                min-height: calc(100vh - 76px) !important;
             }
             
             /* Links da sidebar mais espaçados */
@@ -1873,6 +1892,7 @@
             }
         }
     </style>
+    @yield('styles')
 </head>
 <body>
     <!-- Top Navigation Bar -->
@@ -2013,32 +2033,104 @@
     <script>
         $(document).ready(function() {
             // CSRF Token para requisições AJAX
+            var csrfToken = $('meta[name="csrf-token"]').attr('content');
+            var csrfParam = $('meta[name="csrf-param"]').attr('content');
+            
             $.ajaxSetup({
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    'X-CSRF-TOKEN': csrfToken
                 }
+            });
+            
+            // Adicionar token CSRF a todos os formulários
+            $('form').each(function() {
+                var token = $('<input>', {
+                    type: 'hidden',
+                    name: csrfParam,
+                    value: csrfToken
+                });
+                $(this).append(token);
             });
             
             // Função para atualizar CSRF token
             function refreshCSRFToken() {
-                $.get('/csrf-token')
-                .done(function(data) {
-                    $('meta[name="csrf-token"]').attr('content', data.csrf_token);
-                    $('input[name="_token"]').val(data.csrf_token);
-                })
-                .fail(function() {
-                    console.log('Não foi possível atualizar o CSRF token');
-                });
+                $.get('/refresh-csrf')
+                    .done(function(response) {
+                        if (response.token) {
+                            // Atualizar variáveis
+                            csrfToken = response.token;
+                            
+                            // Atualizar meta tag
+                            $('meta[name="csrf-token"]').attr('content', csrfToken);
+                            
+                            // Atualizar todos os inputs hidden do token
+                            $('input[name="' + csrfParam + '"]').val(csrfToken);
+                            
+                            // Atualizar o header do $.ajaxSetup
+                            $.ajaxSetup({
+                                headers: {
+                                    'X-CSRF-TOKEN': csrfToken
+                                }
+                            });
+                            
+                            console.log('Token CSRF atualizado com sucesso');
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('Erro ao atualizar token CSRF:', error);
+                        if (error.status === 419) {
+                            // Recarregar a página apenas se o token estiver realmente inválido
+                            location.reload();
+                        }
+                    });
             }
+            
+            // Interceptar erros de CSRF em requisições AJAX
+            $(document).ajaxError(function(event, jqXHR, settings, error) {
+                if (jqXHR.status === 419) { // Token CSRF expirado
+                    refreshCSRFToken();
+                }
+            });
             
             // Interceptar envio de formulários para verificar token
             $('form').on('submit', function(e) {
-                let token = $(this).find('input[name="_token"]').val();
-                if (!token || token.length === 0) {
+                let tokenInput = $(this).find('input[name="' + csrfParam + '"]');
+                
+                // Se não houver input de token, criar um
+                if (tokenInput.length === 0) {
+                    tokenInput = $('<input>', {
+                        type: 'hidden',
+                        name: csrfParam,
+                        value: csrfToken
+                    });
+                    $(this).append(tokenInput);
+                }
+                
+                // Verificar se o token está válido
+                let token = tokenInput.val();
+                if (!token || token.length === 0 || token !== csrfToken) {
                     e.preventDefault();
-                    alert('Token de segurança inválido. A página será recarregada.');
-                    location.reload();
+                    tokenInput.val(csrfToken); // Atualizar com o token atual
+                    
+                    // Se ainda estiver inválido, atualizar do servidor
+                    if (!csrfToken || csrfToken.length === 0) {
+                        refreshCSRFToken();
+                        return false;
+                    }
+                    
+                    // Tentar enviar o formulário novamente
+                    $(this).submit();
                     return false;
+                }
+            });
+            
+            // Atualizar token periodicamente (a cada 30 minutos)
+            setInterval(refreshCSRFToken, 30 * 60 * 1000);
+            
+            // Atualizar token ao retomar foco na página
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    refreshCSRFToken();
                 }
             });
         });
@@ -2048,26 +2140,64 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-            
-            // Prevent body scroll when menu is open
-            document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : 'auto';
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+                
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : 'auto';
+                
+                // Força a atualização do layout
+                sidebar.style.display = 'block';
+                setTimeout(() => {
+                    sidebar.style.removeProperty('display');
+                }, 10);
+
+                // Adiciona evento de clique no overlay para fechar o menu
+                if (sidebar.classList.contains('show')) {
+                    overlay.addEventListener('click', closeMobileMenu);
+                } else {
+                    overlay.removeEventListener('click', closeMobileMenu);
+                }
+            }
         }
 
         function closeMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             
-            sidebar.classList.remove('show');
-            overlay.classList.remove('show');
-            document.body.style.overflow = 'auto';
+            if (sidebar && overlay) {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+                overlay.removeEventListener('click', closeMobileMenu);
+            }
         }
 
         // Close mobile menu on window resize
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
                 closeMobileMenu();
+            }
+        });
+
+        // Garantir que o menu mobile funcione em todas as páginas
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar && overlay) {
+                // Forçar a inicialização correta do menu
+                sidebar.style.left = '-300px';
+                overlay.style.display = 'none';
+                
+                // Garantir que o menu seja visível em desktop
+                if (window.innerWidth > 768) {
+                    sidebar.style.left = '0';
+                }
+
+                // Adiciona evento de clique no overlay
+                overlay.addEventListener('click', closeMobileMenu);
             }
         });
 
@@ -2204,6 +2334,13 @@
             window.addEventListener('resize', fixInputGroupsOnMobile);
         });
     </script>
+    
+    <!-- Offline Storage -->
+    <script src="/js/offline-storage.js"></script>
+    
+    <!-- PWA Manager -->
+    <script src="/js/pwa-manager.js"></script>
+    
     @stack('scripts')
 </body>
 </html>

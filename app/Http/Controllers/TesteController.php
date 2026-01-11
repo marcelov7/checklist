@@ -232,6 +232,17 @@ class TesteController extends Controller
             \Illuminate\Support\Facades\Log::info('Foto path do banco:', [$fotoPath]);
             \Illuminate\Support\Facades\Log::info('Dados completos do teste:', [$testeAtualizado->toArray()]);
 
+            // Obter dados atualizados da parada para retornar progresso completo
+            $parada = $testeAtualizado->parada;
+            $parada->refresh();
+            
+            $percentualGeral = $parada->getPercentualCompleto();
+            $percentualPorArea = $parada->getPercentualPorArea();
+            
+            $totalTestes = $parada->total_testes;
+            $testesOk = $parada->testes_ok;
+            $testesPendentes = max(0, $totalTestes - $testesOk);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Problema salvo com sucesso!',
@@ -239,7 +250,12 @@ class TesteController extends Controller
                 'progress' => $testeAtualizado->checklist_progress,
                 'problema' => $validated['problema'],
                 'foto_problema_path' => $fotoPath,
-                'teste_atualizado' => $testeAtualizado->toArray()
+                'teste_atualizado' => $testeAtualizado->toArray(),
+                'percentual' => $percentualGeral,
+                'areas' => $percentualPorArea,
+                'total_testes' => $totalTestes,
+                'testes_ok' => $testesOk,
+                'testes_pendentes' => $testesPendentes,
             ]);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -284,23 +300,75 @@ class TesteController extends Controller
         \Illuminate\Support\Facades\Log::info('Has file foto:', [$request->hasFile('foto')]);
         
         try {
+            // Se um arquivo foi enviado, validar se há erro no upload (ex: excedeu upload_max_filesize)
+            if ($request->hasFile('foto')) {
+                $uploaded = $request->file('foto');
+                if (!$uploaded->isValid()) {
+                    $code = $uploaded->getError();
+                    switch ($code) {
+                        case UPLOAD_ERR_INI_SIZE:
+                            $msg = 'Arquivo maior do que o permitido pelo servidor (upload_max_filesize).';
+                            break;
+                        case UPLOAD_ERR_FORM_SIZE:
+                            $msg = 'Arquivo maior do que o permitido pelo formulário (MAX_FILE_SIZE).';
+                            break;
+                        case UPLOAD_ERR_PARTIAL:
+                            $msg = 'Upload incompleto. Tente novamente.';
+                            break;
+                        case UPLOAD_ERR_NO_FILE:
+                            $msg = 'Nenhum arquivo foi enviado.';
+                            break;
+                        case UPLOAD_ERR_NO_TMP_DIR:
+                            $msg = 'Diretório temporário ausente no servidor.';
+                            break;
+                        case UPLOAD_ERR_CANT_WRITE:
+                            $msg = 'Falha ao gravar o arquivo no disco.';
+                            break;
+                        case UPLOAD_ERR_EXTENSION:
+                            $msg = 'Upload interrompido por uma extensão do PHP.';
+                            break;
+                        default:
+                            $msg = 'Erro desconhecido no upload. Código: ' . $code;
+                    }
+
+                    \Illuminate\Support\Facades\Log::error('Erro no upload da foto de resolução: ' . $msg, ['code' => $code]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Erro ao enviar a foto: ' . $msg
+                    ], 422);
+                }
+            }
+
+            // Validação normal (aceita apenas imagens e tipos comuns)
             $validated = $request->validate([
                 'item' => 'required|in:ar_comprimido,protecoes_eletricas,protecoes_mecanicas,chave_remoto,inspecionado',
                 'resolucao' => 'required|string|min:1',
-                'foto' => 'nullable|image|max:2048'
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
-            
+
             \Illuminate\Support\Facades\Log::info('Validação passou:', $validated);
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Mapear mensagens genéricas de upload para textos amigáveis
+            $errors = $e->validator->errors()->all();
+            $userMessages = array_map(function ($m) {
+                if (strpos($m, 'validation.uploaded') !== false || strpos($m, 'uploaded') !== false) {
+                    return 'Falha no upload do arquivo. Verifique o tamanho (máx 2MB) e o tipo da imagem.';
+                }
+                return $m;
+            }, $errors);
+
             \Illuminate\Support\Facades\Log::error('Erro de validação na resolução:', [
-                'errors' => $e->validator->errors()->all(),
+                'errors' => $errors,
+                'mapped' => $userMessages,
                 'request_data' => $request->all()
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Dados inválidos: ' . implode(', ', $e->validator->errors()->all())
+                'message' => 'Dados inválidos: ' . implode(', ', $userMessages),
+                'errors' => $errors
             ], 422);
         }
 
@@ -340,6 +408,17 @@ class TesteController extends Controller
             \Illuminate\Support\Facades\Log::info('Update data final resolução:', $updateData);
             \Illuminate\Support\Facades\Log::info('Foto resolução path final:', [$testeAtualizado->{$fotoResolucaoField}]);
 
+            // Obter dados atualizados da parada para retornar progresso completo
+            $parada = $testeAtualizado->parada;
+            $parada->refresh();
+            
+            $percentualGeral = $parada->getPercentualCompleto();
+            $percentualPorArea = $parada->getPercentualPorArea();
+            
+            $totalTestes = $parada->total_testes;
+            $testesOk = $parada->testes_ok;
+            $testesPendentes = max(0, $totalTestes - $testesOk);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Problema resolvido com sucesso!',
@@ -347,7 +426,12 @@ class TesteController extends Controller
                 'progress' => $testeAtualizado->checklist_progress,
                 'resolucao' => $validated['resolucao'],
                 'foto_resolucao_path' => $testeAtualizado->{$fotoResolucaoField},
-                'teste_atualizado' => $testeAtualizado->toArray()
+                'teste_atualizado' => $testeAtualizado->toArray(),
+                'percentual' => $percentualGeral,
+                'areas' => $percentualPorArea,
+                'total_testes' => $totalTestes,
+                'testes_ok' => $testesOk,
+                'testes_pendentes' => $testesPendentes,
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erro ao resolver problema: ' . $e->getMessage(), [
@@ -440,11 +524,27 @@ class TesteController extends Controller
             // Recarregar o modelo
             $teste->refresh();
 
+            // Obter dados atualizados da parada para retornar progresso completo
+            $parada = $teste->parada;
+            $parada->refresh();
+            
+            $percentualGeral = $parada->getPercentualCompleto();
+            $percentualPorArea = $parada->getPercentualPorArea();
+            
+            $totalTestes = $parada->total_testes;
+            $testesOk = $parada->testes_ok;
+            $testesPendentes = max(0, $totalTestes - $testesOk);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status atualizado com sucesso!',
                 'equipamento_id' => $teste->equipamento_id,
-                'progress' => $teste->checklist_progress
+                'progress' => $teste->checklist_progress,
+                'percentual' => $percentualGeral,
+                'areas' => $percentualPorArea,
+                'total_testes' => $totalTestes,
+                'testes_ok' => $testesOk,
+                'testes_pendentes' => $testesPendentes,
             ]);
 
         } catch (\Exception $e) {

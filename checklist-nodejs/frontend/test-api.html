@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API</title>
+</head>
+<body>
+    <h1>Teste de Conectividade com API</h1>
+    <button onclick="testHealth()">Testar Health Check</button>
+    <button onclick="testLogin()">Testar Login</button>
+    <div id="result"></div>
+
+    <script>
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h3>Health Check - Sucesso!</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Health Check - Erro!</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@checklist.com',
+                        password: 'admin123'
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h3>Login - Sucesso!</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Login - Erro!</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "name": "Sistema de Checklist Industrial",
+  "short_name": "Checklist",
+  "description": "Sistema de checklist para paradas industriais com funcionamento offline",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Parada",
+      "short_name": "Nova Parada",
+      "description": "Criar nova parada",
+      "url": "/paradas/create",
+      "icons": [{ "src": "/favicon.ico", "sizes": "48x48" }]
+    },
+    {
+      "name": "Histórico",
+      "short_name": "Histórico", 
+      "description": "Ver histórico de paradas",
+      "url": "/paradas",
+      "icons": [{ "src": "/favicon.ico", "sizes": "48x48" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

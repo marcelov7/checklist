@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Parada - {{ $parada->nome }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Estilos específicos para impressão */
         @page {
@@ -120,6 +121,26 @@
         .text-warning { color: #ffc107 !important; }
         .text-muted { color: #6c757d !important; }
         .text-info { color: #17a2b8 !important; }
+
+        /* Estilos para ícones */
+        .fas {
+            margin-right: 4px;
+            font-size: 0.9em;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .text-success .fas { color: #28a745 !important; }
+        .text-danger .fas { color: #dc3545 !important; }
+        .text-warning .fas { color: #ffc107 !important; }
+        .text-muted .fas { color: #6c757d !important; }
+        .text-info .fas { color: #17a2b8 !important; }
 
         .progress {
             height: 12px;
@@ -404,13 +425,21 @@
                                 </td>
                                 <td>
                                     @if($statusGeral === 'COMPLETO')
-                                        <strong class="text-success">COMPLETO</strong>
+                                        <strong class="text-success status-badge">
+                                            <i class="fas fa-check-circle"></i> COMPLETO
+                                        </strong>
                                     @elseif($statusGeral === 'PROBLEMA')
-                                        <strong class="text-danger">PROBLEMA</strong>
+                                        <strong class="text-danger status-badge">
+                                            <i class="fas fa-exclamation-triangle"></i> PROBLEMA
+                                        </strong>
                                     @elseif($statusGeral === 'EM ANDAMENTO')
-                                        <strong class="text-warning">EM ANDAMENTO</strong>
+                                        <strong class="text-warning status-badge">
+                                            <i class="fas fa-clock"></i> EM ANDAMENTO
+                                        </strong>
                                     @else
-                                        <strong class="text-muted">PENDENTE</strong>
+                                        <strong class="text-muted status-badge">
+                                            <i class="fas fa-clock"></i> PENDENTE
+                                        </strong>
                                     @endif
                                 </td>
                                 <td>
@@ -439,12 +468,23 @@
                                         @php $status = $teste->{$item . '_status'}; @endphp
                                         @if($status)
                                             @if($status === 'ok')
-                                                <span class="text-success">OK</span>
+                                                <span class="text-success">
+                                                    <i class="fas fa-check-circle"></i> OK
+                                                </span>
                                             @elseif($status === 'problema')
-                                                <span class="text-danger">PROBLEMA</span>
+                                                <span class="text-danger">
+                                                    <i class="fas fa-exclamation-triangle"></i> PROBLEMA
+                                                </span>
                                             @elseif($status === 'nao_aplica')
-                                                <span class="text-muted">N/A</span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-ban"></i> N/A
+                                                </span>
                                             @endif
+                                            <br>
+                                        @else
+                                            <span class="text-warning">
+                                                <i class="fas fa-clock"></i> PENDENTE
+                                            </span>
                                             <br>
                                         @endif
                                     @endforeach

@@ -18,7 +18,7 @@ class UserController extends Controller
 
         // Apply filters
         if ($request->filled('perfil')) {
-            $query->where('perfil', $request->perfil);
+            $query->byPerfil($request->perfil);
         }
 
         if ($request->filled('status')) {
@@ -30,13 +30,29 @@ class UserController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('username', 'like', "%{$search}%");
+                  ->orWhere('username', 'like', "%{$search}%")
+                  ->orWhere('departamento', 'like', "%{$search}%");
             });
         }
 
-        $users = $query->orderBy('name')->paginate(15)->withQueryString();
+        // Ordenação padrão por nome
+        $query->orderBy('name');
+
+        $users = $query->paginate(15)->withQueryString();
         
-        return view('usuarios.index', compact('users'));
+        // Preparar dados para os selects
+        $perfis = [
+            'admin' => 'Administrador',
+            'operador' => 'Operador',
+            'manutencao' => 'Manutenção'
+        ];
+        
+        $statusOptions = [
+            'ativo' => 'Ativo',
+            'inativo' => 'Inativo'
+        ];
+        
+        return view('usuarios.index', compact('users', 'perfis', 'statusOptions'));
     }
 
     /**

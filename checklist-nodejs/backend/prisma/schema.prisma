@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  username  String?  @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  paradas   Parada[]
+
+  @@map("users")
+}
+
+model Area {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  paradas     Parada[]
+  equipamentos Equipamento[]
+
+  @@map("areas")
+}
+
+model Equipamento {
+  id          String             @id @default(cuid())
+  numeracao   String             @unique
+  nome        String
+  tipo        String?
+  fabricante  String?
+  modelo      String?
+  numeroSerie String?
+  status      EquipamentoStatus  @default(ATIVO)
+  prioridade  Int                @default(3)
+  observacoes String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  areaId      String?
+  area        Area?              @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@map("equipamentos")
+}
+
+model Parada {
+  id        String       @id @default(cuid())
+  name      String
+  status    ParadaStatus @default(ATIVA)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  areaId    String
+  userId    String?
+  user      User?        @relation(fields: [userId], references: [id])
+  area      Area         @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  testes    Teste[]
+
+  @@map("paradas")
+}
+
+model Teste {
+  id        String      @id @default(cuid())
+  name      String
+  status    TesteStatus @default(PENDENTE)
+  progress  Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  paradaId  String
+  parada    Parada      @relation(fields: [paradaId], references: [id], onDelete: Cascade)
+
+  @@map("testes")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum EquipamentoStatus {
+  ATIVO
+  INATIVO
+  MANUTENCAO
+  PARADO
+  EM_TESTE
+}
+
+enum ParadaStatus {
+  ATIVA
+  CONCLUIDA
+  CANCELADA
+}
+
+enum TesteStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
