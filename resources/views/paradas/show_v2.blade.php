@@ -42,6 +42,7 @@
 
     /* Equipment card */
     .equipment-shell { border-radius: 14px; border: 1px solid rgba(30, 54, 86, 0.12); background: #fff; box-shadow: 0 8px 18px rgba(18, 38, 63, 0.06); margin-bottom: 0.9rem; overflow: hidden; position: relative; }
+    .equipment-shell.has-problem { border-color: #dc3545 !important; box-shadow: 0 8px 24px rgba(220,53,69,0.12); }
     .equipment-shell::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, #1e3d72 0%, #0dcaf0 100%); }
     .equipment-shell .equipment-header { background: linear-gradient(90deg, #f2f7ff 0%, #ffffff 70%); padding: 0.9rem 1.2rem 0.85rem; border-bottom: 1px solid rgba(30, 54, 86, 0.12); }
     .equipment-shell .equipment-title h6 { font-size: 1.15rem; font-weight: 800; color: #1e3d72; letter-spacing: 0.2px; }
@@ -381,6 +382,10 @@
                     <select id="filter-equip" class="form-select form-select-sm" style="min-width:200px">
                         <option value="">Todos os equipamentos</option>
                     </select>
+                    <div class="form-check form-check-inline ms-2">
+                        <input class="form-check-input" type="checkbox" id="filter-problem-only">
+                        <label class="form-check-label small" for="filter-problem-only">Apenas com Problema</label>
+                    </div>
                     <button id="apply-filters" class="btn btn-primary btn-sm">Aplicar</button>
                     <button id="clear-filters" class="btn btn-outline-secondary btn-sm">Limpar</button>
                 </div>
@@ -390,6 +395,20 @@
             </div>
             <div id="filtered-equipment-container" class="row mt-3"></div>
             <nav id="filter-pagination" class="mt-3" aria-label="Paginação de equipamentos"></nav>
+            <!-- Navegação mobile entre equipamentos (aparece só em telas pequenas) -->
+            <div id="mobile-equip-nav" class="d-flex d-md-none align-items-center fixed-bottom p-2 bg-white border-top" style="z-index:1050;white-space:nowrap;overflow:auto;gap:.5rem;">
+                <div style="display:flex;align-items:center;gap:.25rem;flex:0 0 auto;">
+                    <button id="mobile-equip-prev" class="btn btn-outline-secondary btn-sm" style="padding:.28rem .45rem;font-size:.82rem;min-width:44px;flex:0 0 auto;">«</button>
+                </div>
+                <div style="flex:1 1 auto;text-align:center;min-width:120px;">
+                    <div class="small text-muted" style="font-weight:600;">Próximo equipamento</div>
+                    <div id="mobile-equip-nav-status" class="small text-muted">0/0</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.25rem;flex:0 0 auto;">
+                    <button id="mobile-equip-next" class="btn btn-outline-secondary btn-sm" style="padding:.28rem .45rem;font-size:.82rem;min-width:44px;flex:0 0 auto;">›</button>
+                    <button id="mobile-equip-last" class="btn btn-outline-secondary btn-sm" style="padding:.28rem .45rem;font-size:.82rem;min-width:44px;flex:0 0 auto;">⇥</button>
+                </div>
+            </div>
         </div>
 
         <!-- Lista de Áreas e Equipamentos -->
@@ -444,7 +463,10 @@
                                 @php $teste = $equipamento->testes->first() @endphp
                                 @if($teste)
                                 <div class="col-12 col-sm-6 col-md-6 col-lg-12">
-                                    <div class="equipment-card equipment-shell" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}" data-area-id="{{ $area->id }}" data-equip-id="{{ $equipamento->id }}" data-equip-name="{{ $equipamento->nome }}">
+                                    @php
+                                        $hasProblem = collect($teste->checklist_items)->contains(function($it){ return isset($it['status']) && $it['status'] === 'problema'; });
+                                    @endphp
+                                    <div class="equipment-card equipment-shell {{ $hasProblem ? 'has-problem' : '' }}" id="equipamento_{{ $equipamento->id }}_{{ $teste->id }}" data-area-id="{{ $area->id }}" data-equip-id="{{ $equipamento->id }}" data-equip-name="{{ $equipamento->nome }}" data-has-problem="{{ $hasProblem ? '1' : '0' }}">
                                         <!-- Header do Equipamento -->
                                         <div class="equipment-header">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -1740,7 +1762,7 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
     (function () {
         const PAGE_SIZE = 10;
         const prefix = 'parada_filter_{{ $parada->id }}_';
-        let equipments = []; // { wrapperEl, cardEl, areaId, equipId, equipName, originalParent, originalNext }
+        let equipments = []; // { wrapperEl, cardEl, areaId, equipId, equipName, hasProblem, originalParent, originalNext }
         let currentPage = 1;
 
         function collectEquipments() {
@@ -1750,7 +1772,8 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
                 const areaId = card.dataset.areaId || (card.closest('.area-card')?.querySelector('.area-header-v3')?.dataset.areaId) || '';
                 const equipId = card.dataset.equipId || '';
                 const equipName = card.dataset.equipName || (card.querySelector('.equipment-title h6')?.textContent.trim()) || '';
-                equipments.push({ wrapperEl: wrapper, cardEl: card, areaId, equipId, equipName, originalParent: wrapper.parentElement, originalNext: wrapper.nextElementSibling });
+                const hasProblem = (card.dataset.hasProblem === '1') || card.classList.contains('has-problem');
+                equipments.push({ wrapperEl: wrapper, cardEl: card, areaId, equipId, equipName, hasProblem, originalParent: wrapper.parentElement, originalNext: wrapper.nextElementSibling });
             });
         }
 
@@ -1785,29 +1808,32 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             const area = localStorage.getItem(prefix + 'area') || '';
             const equip = localStorage.getItem(prefix + 'equip') || '';
             const page = parseInt(localStorage.getItem(prefix + 'page') || '1', 10) || 1;
-            return { area, equip, page };
+            const problem = localStorage.getItem(prefix + 'problem') === '1';
+            return { area, equip, page, problem };
         }
 
-        function storeFilters(area, equip, page) {
+        function storeFilters(area, equip, page, problem = false) {
             if (area) localStorage.setItem(prefix + 'area', area); else localStorage.removeItem(prefix + 'area');
             if (equip) localStorage.setItem(prefix + 'equip', equip); else localStorage.removeItem(prefix + 'equip');
             if (page) localStorage.setItem(prefix + 'page', String(page)); else localStorage.removeItem(prefix + 'page');
+            if (problem) localStorage.setItem(prefix + 'problem', '1'); else localStorage.removeItem(prefix + 'problem');
         }
 
-        function applyFiltersFromUI() { const area = document.getElementById('filter-area').value; const equip = document.getElementById('filter-equip').value; applyFilters(area, equip, 1); }
+        function applyFiltersFromUI() { const area = document.getElementById('filter-area').value; const equip = document.getElementById('filter-equip').value; const problem = document.getElementById('filter-problem-only').checked; applyFilters(area, equip, 1, problem); }
 
-        function applyFilters(area, equip, page = 1) {
+        function applyFilters(area, equip, page = 1, problem = false) {
             const filtered = equipments.filter(e => {
                 if (area && String(e.areaId) !== String(area)) return false;
                 if (equip && String(e.equipId) !== String(equip)) return false;
+                if (problem && !e.hasProblem) return false;
                 return true;
             });
 
             const badge = document.getElementById('filter-active-badge');
-            if (badge) badge.style.display = ((area || equip) ? 'inline-block' : 'none');
+            if (badge) badge.style.display = ((area || equip || problem) ? 'inline-block' : 'none');
 
             // Hide original area cards when filter active
-            document.querySelectorAll('.area-card').forEach(ac => { ac.style.display = (area || equip) ? 'none' : ''; });
+            document.querySelectorAll('.area-card').forEach(ac => { ac.style.display = (area || equip || problem) ? 'none' : ''; });
 
             // move matching wrappers into filtered container
             const container = document.getElementById('filtered-equipment-container');
@@ -1815,7 +1841,8 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="col-12"><div class="alert alert-secondary">Nenhum equipamento encontrado para os filtros selecionados.</div></div>';
                 renderPagination(0, page);
-                storeFilters(area, equip, page);
+                storeFilters(area, equip, page, problem);
+                try { if (typeof updateMobileNavState === 'function') updateMobileNavState(0, 0); currentMobileIndex = 0; if (window.innerWidth <= 767 && typeof showEquipmentAt === 'function') showEquipmentAt(0); } catch(e) {}
                 return;
             }
 
@@ -1831,7 +1858,12 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             }
 
             renderPagination(pageCount, page);
-            storeFilters(area, equip, page);
+            storeFilters(area, equip, page, problem);
+            try {
+                currentMobileIndex = 0;
+                if (typeof updateMobileNavState === 'function') updateMobileNavState(filtered.length ? 1 : 0, filtered.length);
+                if (window.innerWidth <= 767 && typeof showEquipmentAt === 'function') showEquipmentAt(0);
+            } catch(e) {}
         }
 
         function renderPagination(pageCount, activePage) {
@@ -1857,12 +1889,12 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
         }
 
         function onPageClick(p) {
-            const stored = readStored(); const area = stored.area || document.getElementById('filter-area').value; const equip = stored.equip || document.getElementById('filter-equip').value;
+            const stored = readStored(); const area = stored.area || document.getElementById('filter-area').value; const equip = stored.equip || document.getElementById('filter-equip').value; const problem = stored.problem || document.getElementById('filter-problem-only').checked;
             // Before changing page, ensure we collect up-to-date equipments
             collectEquipments();
             // Move all wrappers back to original to avoid duplicates then reapply filter
             restoreAllOriginals();
-            applyFilters(area, equip, p);
+            applyFilters(area, equip, p, problem);
         }
 
         function restoreAllOriginals() {
@@ -1890,11 +1922,70 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             localStorage.removeItem(prefix + 'area');
             localStorage.removeItem(prefix + 'equip');
             localStorage.removeItem(prefix + 'page');
+            localStorage.removeItem(prefix + 'problem');
             document.getElementById('filter-area').value = '';
             document.getElementById('filter-equip').value = '';
             document.getElementById('filter-active-badge').style.display = 'none';
+            const chk = document.getElementById('filter-problem-only'); if (chk) chk.checked = false;
             document.getElementById('filtered-equipment-container').innerHTML = '';
             document.getElementById('filter-pagination').innerHTML = '';
+        }
+
+        // ===== Navegação Mobile entre equipamentos =====
+        let currentMobileIndex = 0;
+
+        function getVisibleEquipmentCards() {
+            const filteredContainer = document.getElementById('filtered-equipment-container');
+            if (filteredContainer && filteredContainer.children.length > 0) {
+                return Array.from(filteredContainer.querySelectorAll('.equipment-shell'));
+            }
+            // quando não há filtro ativo, considerar todos os equipamentos visíveis (áreas expandidas)
+            return Array.from(document.querySelectorAll('.equipment-shell')).filter(el => {
+                const areaCard = el.closest('.area-card');
+                if (areaCard && window.getComputedStyle(areaCard).display === 'none') return false;
+                return el.offsetParent !== null;
+            });
+        }
+
+        function updateMobileNavState(curOneBased, total) {
+            const status = document.getElementById('mobile-equip-nav-status');
+            if (status) status.textContent = total ? (curOneBased + '/' + total) : '0/0';
+            const prevBtn = document.getElementById('mobile-equip-prev');
+            const nextBtn = document.getElementById('mobile-equip-next');
+            const lastBtn = document.getElementById('mobile-equip-last');
+            if (prevBtn) prevBtn.disabled = curOneBased <= 1;
+            if (nextBtn) nextBtn.disabled = curOneBased >= total;
+            if (lastBtn) lastBtn.disabled = total === 0 || curOneBased >= total;
+        }
+
+        function showEquipmentAt(index) {
+            const list = getVisibleEquipmentCards();
+            if (!list || list.length === 0) {
+                currentMobileIndex = 0;
+                updateMobileNavState(0, 0);
+                return;
+            }
+            if (index < 0) index = 0; if (index >= list.length) index = list.length - 1;
+            currentMobileIndex = index;
+            const card = list[index];
+            // Preferir rolar para o header do equipamento (nome) para começar do início do card
+            const headerEl = card.querySelector('.equipment-header') || card.querySelector('.equipment-title') || card;
+            const scrollTarget = (headerEl && headerEl.scrollIntoView) ? headerEl : (card.parentElement || card);
+            try { scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e) { scrollTarget.scrollIntoView(); }
+            // efeito visual curto (realça com box-shadow inline)
+            const prevBox = card.style.boxShadow;
+            card.style.boxShadow = '0 0 0 4px rgba(13,110,253,0.18)';
+            setTimeout(() => { card.style.boxShadow = prevBox || ''; }, 900);
+            updateMobileNavState(index + 1, list.length);
+        }
+
+        function bindMobileNavButtons() {
+            const prevBtn = document.getElementById('mobile-equip-prev');
+            const nextBtn = document.getElementById('mobile-equip-next');
+            const lastBtn = document.getElementById('mobile-equip-last');
+            if (prevBtn) prevBtn.addEventListener('click', (ev) => { ev.preventDefault(); showEquipmentAt(currentMobileIndex - 1); });
+            if (nextBtn) nextBtn.addEventListener('click', (ev) => { ev.preventDefault(); showEquipmentAt(currentMobileIndex + 1); });
+            if (lastBtn) lastBtn.addEventListener('click', (ev) => { ev.preventDefault(); const list = getVisibleEquipmentCards(); showEquipmentAt(list.length - 1); });
         }
 
         function init() {
@@ -1903,13 +1994,18 @@ function atualizarHistoricoAposSalvar(item, testeId, data) {
             const stored = readStored();
             if (stored.area) document.getElementById('filter-area').value = stored.area;
             if (stored.equip) document.getElementById('filter-equip').value = stored.equip;
+            if (stored.problem) {
+                const chk = document.getElementById('filter-problem-only'); if (chk) chk.checked = true;
+            }
             document.getElementById('apply-filters').addEventListener('click', applyFiltersFromUI);
             document.getElementById('clear-filters').addEventListener('click', (ev) => { ev.preventDefault(); clearFilters(); });
 
             // If there are stored filters, apply them
-            if (stored.area || stored.equip) {
-                applyFilters(stored.area, stored.equip, stored.page || 1);
+            if (stored.area || stored.equip || stored.problem) {
+                applyFilters(stored.area, stored.equip, stored.page || 1, stored.problem || false);
             }
+            // vincular botões mobile e ajustar estado inicial
+            try { bindMobileNavButtons(); const initialList = getVisibleEquipmentCards(); if (typeof updateMobileNavState === 'function') updateMobileNavState(initialList.length ? 1 : 0, initialList.length); if (window.innerWidth <= 767 && initialList.length) showEquipmentAt(0); } catch(e) {}
         }
 
         // inicializa após curto delay para garantir que o DOM esteja pronto e scripts anteriores carregados
