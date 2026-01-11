@@ -1130,6 +1130,20 @@
     .equipment-header { align-items: center; }
 }
 
+    /* Em telas grandes, garantir espaço para textos e botões dos itens */
+    @media (min-width: 1200px) {
+        .equipment-card { min-width: 560px; }
+        .checklist-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+            gap: 1rem;
+            align-items: center;
+        }
+        .action-buttons .btn { min-width: 140px; }
+        .equipment-header .d-flex { flex-wrap: nowrap; gap: 1rem; }
+        .equipment-header .equipment-title { min-width: 260px; }
+    }
+
 </style>
 @endsection
 

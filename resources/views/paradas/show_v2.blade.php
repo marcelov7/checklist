@@ -126,6 +126,10 @@
     @media (min-width: 1200px) {
         .equipment-progress { max-width: 240px; }
         .equipment-shell .equipment-header { align-items: center; }
+        /* Aumentar espaço dos itens do checklist e botões em telas maiores */
+        .checklist-content { grid-template-columns: minmax(0, 1fr) minmax(420px, 560px); gap: 1rem; }
+        .action-buttons .btn { min-width: 140px; }
+        .equipment-shell { min-width: 560px; }
     }
 
 </style>
