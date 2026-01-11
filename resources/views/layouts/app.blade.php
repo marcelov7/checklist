@@ -2198,6 +2198,8 @@
                 sidebar.style.display = 'block';
                 setTimeout(() => {
                     sidebar.style.removeProperty('display');
+                    // garantir que o overlay não esteja escondido por estilo inline
+                    overlay.style.removeProperty('display');
                 }, 10);
 
                 // Adiciona evento de clique no overlay para fechar o menu
@@ -2218,6 +2220,8 @@
                 overlay.classList.remove('show');
                 document.body.style.overflow = 'auto';
                 overlay.removeEventListener('click', closeMobileMenu);
+                // remover qualquer estilo inline que esconda o overlay
+                overlay.style.removeProperty('display');
             }
         }
 
@@ -2236,7 +2240,6 @@
             if (sidebar && overlay) {
                 // Forçar a inicialização correta do menu
                 sidebar.style.left = '-300px';
-                overlay.style.display = 'none';
                 
                 // Garantir que o menu seja visível em desktop
                 if (window.innerWidth > 768) {
